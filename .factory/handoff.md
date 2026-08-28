@@ -79,8 +79,34 @@ Results on 2026-08-28 UTC:
 
 ## Deployment and live checks
 
-Deployment and post-deploy identity checks are recorded here after the repair
-commit is uploaded.
+Repair commit `a6ca65ecf7279113316446eef70c8bb31b6c6e90` was pushed to `main` and its
+`dist/` was uploaded to the existing production Azure Static Web App. No DNS,
+billing, or infrastructure configuration was changed.
+
+Post-deploy checks on 2026-08-28 UTC:
+
+- All 15 public build files byte-match local `dist/`. The live and local
+  `index.html` SHA-256 is
+  `7bd26c68e72b845cdd391522c42a2b3c0353a536297ae5028e0012d927c01e2b`.
+- Live `verify-url.sh` on `/demo`: HTTP 200, 724ms measured load, zero console
+  errors, correct title/language/landmarks/alternatives/button names, plus
+  desktop and 390px screenshots.
+- The checkout endpoint returns HTTP 303 to an HTTPS
+  `checkout.dodopayments.com/session/cks_…` URL.
+- A fresh live invalid returned token receives HTTP 200 with `valid:false`, is
+  removed from the address bar, leaves the note disabled, and leaves both Save
+  note and Print practice week absent without a reload.
+- Live landing axe: zero serious or critical violations. At 390px the document
+  is 390px wide and every tested header, demo, and footer target is at least
+  44px.
+- Fresh live offline test: after visiting only `/`, `/practice` opens with its
+  normal heading while offline. Keyboard drawing focuses the pad and enables
+  Save this drill.
+- `/not-a-real-route` returns HTTP 404. Shell responses are `no-cache`; hashed
+  assets are `max-age=31536000, immutable`; `sw.js` is `no-cache`. CSP,
+  `nosniff`, and strict-origin referrer headers are present.
+- Live Lighthouse 12.8.2 mobile: Performance 100, Accessibility 100, Best
+  Practices 100, SEO 100; LCP 0.9s, CLS 0, TBT 30ms, Speed Index 0.8s.
 
 ## Known gaps
 

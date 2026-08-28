@@ -81,6 +81,9 @@ button.coral {
   z-index: 99;
   color: var(--ink);
   font-weight: 800;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .skip-link:focus {
   top: 8px;
@@ -287,6 +290,9 @@ h3 {
   padding: 22px;
   background: var(--yellow);
   box-shadow: 7px 7px 0 var(--ink);
+}
+.pricing a:not(.button) {
+  color: var(--ink);
 }
 .price {
   font:

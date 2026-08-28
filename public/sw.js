@@ -1,4 +1,4 @@
-const CACHE = 'touch-drills-v2';
+const CACHE = 'touch-drills-v3';
 const GENERATED_ASSETS = [];
 const APP_ROUTES = ['/', '/practice', '/demo', '/privacy', '/terms'];
 const SHELL = [...APP_ROUTES, '/index.html', '/offline.html', '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png', ...GENERATED_ASSETS];
@@ -8,6 +8,7 @@ self.addEventListener('message', event => { if (event.data === 'SKIP_WAITING') s
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const request = event.request;
+  if (new URL(request.url).origin !== location.origin) return;
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).then(response => {
       if (response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy))); }
@@ -20,7 +21,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   event.respondWith(caches.match(request).then(hit => hit || fetch(request).then(response => {
-    if (response.ok && new URL(request.url).origin === location.origin) {
+    if (response.ok) {
       const copy = response.clone();
       event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
     }

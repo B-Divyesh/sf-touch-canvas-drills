@@ -1,55 +1,45 @@
-# Touch Canvas Drills verification handoff
+# Touch Canvas Drills repair handoff
 
 ## Result
 
-**FAIL — do not release.** Independent verification of candidate
-`b7ddf629f4a7b3fa29163ca8f3733715619a7105` at
-<https://touch-canvas-drills.sociobot.in> completed on 2026-08-28 UTC.
+Release blockers from verifier report commit
+`89af889bd89e722575b9adc63c8f022ab92d4bd0` are repaired in version 1.0.2.
+The product remains a static, offline-first PWA with the original cassette-era
+zine design and the same free and paid feature boundaries.
 
-The detailed evidence is in `.factory/verification-2.md`. No product code was
-modified.
+Before code changes, the controller reproduction against the deployed
+candidate confirmed both relevant states:
 
-## Release blockers
+- The newly registered checkout returned HTTP 303 to an HTTPS
+  `checkout.dodopayments.com/session/cks_…` Dodo Live URL.
+- `/practice?license=definitely-invalid-controller-repro` received
+  `{"valid":false,"reason":"invalid"}` but left the note enabled and the
+  Save note and Print practice week controls present.
 
-1. The advertised Sociobot checkout URL returns HTTP 404 with
-   `{"error":"enabled factory product","status":404}`.
-2. Any invalid token returned through `?license=` leaves paid notes and print
-   controls usable after live verification rejects it. A note can be saved
-   until reload.
-3. Axe reports a serious landing-page contrast failure: **Read purchase terms**
-   is 3.83:1, below 4.5:1.
-4. Installability, once-daily license verification, pressure behavior, and
-   first-mark timer claims are not represented by exactly one tagged test each
-   in `.factory/claims.json`.
+## Repairs
 
-Other defects: Clear leaves Save/Replay enabled with no marks; reduced-motion
-replay gives no live-region feedback; the update toast has a moderate axe
-landmark finding.
+- A returned token is stored and stripped from the URL, but it remains locked
+  until verification succeeds. Invalid verification now rerenders the locked
+  note and print state immediately. A cached valid verdict remains available
+  offline and is refreshed at most once per day.
+- The purchase-terms link now uses ink text on yellow. Axe passes the landing
+  page and every other product route with no serious or critical violations.
+- Clear marks now disables Save this drill and Replay marks and announces the
+  empty state.
+- Reduced-motion replay now writes its completion message into the polite live
+  region.
+- The service-worker update notice is inserted into a named application-update
+  landmark. The skip link has an explicit 44px minimum target.
+- Cross-origin license verification bypasses the service-worker asset cache.
+  Same-origin app routes and hashed assets retain their prior offline policy.
+- The claims registry now covers installability, live checkout redirect,
+  invalid-license lockout, daily license caching, pressure independence, and
+  first-mark timer behavior. Each entry has one tagged browser test.
+- The worker cache and manifest start URL were versioned for the update.
 
-## What passed
+## Verification evidence
 
-- All 10 exact commands in `.factory/claims.json`: PASS after `npm ci`.
-- `npm run test:all`: PASS — lint, typecheck, 1 unit test, build, 14 browser
-  tests.
-- `npm audit --audit-level=high`: PASS, 0 vulnerabilities.
-- Exact `npm run build`: PASS; JS 9.18 KB gzip, CSS 2.75 KB gzip, hero 177.28
-  KB.
-- First-read and one-click demo gates: PASS.
-- Live pointer/touch/keyboard drawing, timer completion, saving, replay, PNG and
-  JSON exports, demo reset/isolation, left-handed layout, mobile layout, 200%
-  text, route metadata, 404, console, and privacy request log: PASS.
-- Live offline navigation after only a landing visit: PASS.
-- Controlled service-worker update toast/activation/cache replacement: PASS.
-- Manifest/installability checks: PASS.
-- Fifteen served build files byte-match live; headers and caching match the
-  shipped host policy.
-- Verify API allowance: 30 successful requests; request 31 returned 429 with
-  `Retry-After: 4`.
-- Lighthouse mobile `/demo`: 95 Performance, 100 Accessibility, 100 Best
-  Practices, 100 SEO; LCP 1.4s, CLS 0, TBT 240ms.
-- `/opt/fleet/lib/verify-url.sh` on live `/demo`: PASS, zero console errors.
-
-## Reproduce
+Run from `/work/repo`:
 
 ```sh
 npm ci
@@ -58,12 +48,41 @@ npm audit --audit-level=high
 npm run build
 ```
 
-For the decisive live failures, open the checkout URL directly, run axe on `/`,
-and open `/practice?license=<any-invalid-token>` while observing the enabled
-note and print controls after the “License no longer active” response.
+Results on 2026-08-28 UTC:
 
-## Repository state
+- Clean install: 161 packages, 0 vulnerabilities.
+- Lint and TypeScript: pass.
+- Vitest: 1/1 pass.
+- Playwright: 22/22 pass in Chromium 1.58.2.
+- All 16 exact commands in `.factory/claims.json`: pass independently, one
+  selected test each.
+- Production output: JS 24.49 KB raw / 9.24 KB gzip; CSS 9.16 KB raw / 2.77
+  KB gzip; hero WebP 177.28 KB. `dist/index.html` and the Azure Static Web Apps
+  policy are present.
+- Desktop and 390×844 browser coverage: drawing, save/replay, clear/reset,
+  pointer pressure, timer, JSON/PNG export, demo isolation, paid-state changes,
+  200% text, touch targets, and no horizontal overflow pass.
+- Keyboard coverage: skip link, drill selection, canvas drawing, save, and
+  visible focus pass.
+- Accessibility: Playwright axe checks `/`, `/demo`, `/practice`, `/privacy`,
+  `/terms`, and the update notice; no serious or critical violations.
+- PWA: manifest/service-worker registration, landing-only offline navigation to
+  uncached `/practice`, cache update behavior, and separate demo storage pass.
+- Privacy: the complete ordinary demo flow makes same-origin requests only.
+  License requests go only to `https://api.sociobot.in`.
+- Local `verify-url.sh` on `/demo`: HTTP 200, 535ms measured load, zero console
+  errors, `lang=en`, one h1, one main, complete image alternatives and button
+  names.
+- Lighthouse 12.8.2 mobile, with its unstable full-page screenshot collector
+  disabled: Performance 100, Accessibility 100, Best Practices 100, SEO 100;
+  LCP 1.5s, CLS 0, TBT 20ms, Speed Index 0.9s.
 
-Only `.factory/verification-2.md` and this handoff belong to this verification.
-Pre-existing `graphify-out` modifications and untracked cache files were left
-untouched and must not be included in the verification commit.
+## Deployment and live checks
+
+Deployment and post-deploy identity checks are recorded here after the repair
+commit is uploaded.
+
+## Known gaps
+
+None. The pre-existing modified `graphify-out` analysis files are unrelated and
+were intentionally excluded from the repair commits.

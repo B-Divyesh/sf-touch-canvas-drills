@@ -1,7 +1,8 @@
 # Touch Canvas Drills
 
-Practice touch drawing with short drills. It is for Android phones and tablets,
-and works as an installable offline-first web app after the first visit.
+Practice touch drawing with short drills. It is for Android phones and tablets.
+It can be installed as a standalone web app. It works offline after the first
+visit.
 
 ## What it does
 
@@ -19,12 +20,9 @@ artwork or use third-party analytics.
 ## Run and verify
 
 ```sh
-npm install
+npm ci
 npm run dev
-npm run lint
-npm run typecheck
-npm run test:unit
-npm test
+npm run test:all
 npm run build
 ```
 

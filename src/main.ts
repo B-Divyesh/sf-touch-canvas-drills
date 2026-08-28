@@ -23,6 +23,8 @@ let recordingStart = 0;
 let statusText = "";
 let keyboardCursor = { x: 450, y: 338 };
 let keyboardDrawing = false;
+let licenseMessage = "";
+let licenseCheckInFlight = false;
 
 function esc(value: string) {
   return value.replace(
@@ -46,7 +48,7 @@ function nav(path: string) {
   );
 }
 function footer() {
-  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.1</p></footer>`;
+  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.2</p></footer>`;
 }
 function header() {
   return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/demo" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
@@ -94,7 +96,7 @@ function appView() {
   const drill = drills[chosen];
   const left = data.leftHanded ? "left" : "";
   document.title = `${isDemo() ? "Demo" : "Practice"} — Touch Canvas Drills`;
-  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved takes</h3>${savedTakes()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. Core practice remains free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${data.licenseValid ? "Extras are active." : "No active extras license."}</p><button class="export-data secondary">Export progress JSON</button></article></section></main>${footer()}`;
+  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved takes</h3>${savedTakes()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. Core practice remains free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${licenseMessage || (data.licenseValid ? "Extras are active." : "No active extras license.")}</p><button class="export-data secondary">Export progress JSON</button></article></section></main>${footer()}`;
 }
 function legal(kind: "privacy" | "terms") {
   const privacy = kind === "privacy";
@@ -129,8 +131,8 @@ function render() {
   bind();
   if (isAppRoute()) {
     setupCanvas();
-    verifyStoredLicense();
   }
+  if (!isDemo()) void verifyStoredLicense();
 }
 function bind() {
   document.querySelectorAll<HTMLAnchorElement>("[data-link]").forEach((a) =>
@@ -176,6 +178,8 @@ function bind() {
     stopTimer();
     statusText = "Marks cleared. Try the guide again.";
     setupCanvas();
+    syncMarkControls();
+    announceStatus();
   });
   document.querySelector(".replay")?.addEventListener("click", replay);
   document.querySelectorAll<HTMLButtonElement>(".load-session").forEach((button) =>
@@ -413,6 +417,13 @@ function enableMarkControls() {
   if (save) save.disabled = false;
   if (replayBtn) replayBtn.disabled = false;
 }
+function syncMarkControls() {
+  const disabled = current.length === 0;
+  const save = document.querySelector<HTMLButtonElement>(".save-session");
+  const replayBtn = document.querySelector<HTMLButtonElement>(".replay");
+  if (save) save.disabled = disabled;
+  if (replayBtn) replayBtn.disabled = disabled;
+}
 function keyboardDraw(e: KeyboardEvent) {
   if (e.key === "Escape") {
     e.preventDefault();
@@ -424,6 +435,7 @@ function keyboardDraw(e: KeyboardEvent) {
     stopTimer();
     statusText = "Marks cleared. Keyboard pen is at the center.";
     drawNow();
+    syncMarkControls();
     announceStatus();
     return;
   }
@@ -520,6 +532,7 @@ function replay() {
   if (reduced) {
     drawNow();
     statusText = "Replay shown without motion.";
+    announceStatus();
     return;
   }
   const flattened = current.flatMap((s, i) => s.points.map((p) => ({ i, p })));
@@ -575,49 +588,42 @@ async function verifyLicense() {
     return;
   }
   data.license = token;
+  data.licenseValid = false;
+  data.licenseChecked = 0;
   if (!isDemo()) localStorage.setItem("sb_license:touch-canvas-drills", token);
   saveData(data);
-  result.textContent = "Checking your license…";
-  try {
-    const r = await fetch(
-      `https://api.sociobot.in/api/v1/products/touch-canvas-drills/verify?license=${encodeURIComponent(token)}`,
-    );
-    const body = (await r.json()) as { valid: boolean; reason: string };
-    data.licenseValid = body.valid;
-    data.licenseChecked = Date.now();
-    saveData(data);
-    result.textContent = body.valid
-      ? "Extras are active."
-      : "License is not active. You can buy the extras from the home page.";
-    if (body.valid) render();
-  } catch {
-    result.textContent =
-      "Could not check the license. Your free drills still work offline.";
-  }
+  licenseMessage = "Checking your license…";
+  render();
 }
 async function verifyStoredLicense() {
   if (
     isDemo() ||
+    licenseCheckInFlight ||
     !data.license ||
     Date.now() - (data.licenseChecked || 0) < 86_400_000
   )
     return;
+  licenseCheckInFlight = true;
   try {
     const response = await fetch(
       `https://api.sociobot.in/api/v1/products/touch-canvas-drills/verify?license=${encodeURIComponent(data.license)}`,
     );
-    const body = (await response.json()) as { valid: boolean };
+    if (!response.ok) throw new Error(`License check failed with ${response.status}`);
+    const body = (await response.json()) as { valid: boolean; reason: string };
     data.licenseValid = body.valid;
     data.licenseChecked = Date.now();
     saveData(data);
-    if (!body.valid) {
-      const result = document.querySelector("#license-result");
-      if (result)
-        result.textContent =
-          "License no longer active. Free drills still work.";
-    }
+    licenseMessage = body.valid
+      ? "Extras are active."
+      : "License no longer active. Free drills still work.";
+    licenseCheckInFlight = false;
+    render();
   } catch {
-    // Keep the cached verdict when offline.
+    licenseCheckInFlight = false;
+    licenseMessage =
+      "Could not check the license. Your free drills still work offline.";
+    const result = document.querySelector("#license-result");
+    if (result) result.textContent = licenseMessage;
   }
 }
 function captureReturnedLicense() {
@@ -627,7 +633,9 @@ function captureReturnedLicense() {
     const stored = loadData();
     stored.license = token;
     if (!isDemo()) localStorage.setItem("sb_license:touch-canvas-drills", token);
-    stored.licenseValid = true;
+    stored.licenseValid = false;
+    stored.licenseChecked = 0;
+    licenseMessage = "Checking your license…";
     saveData(stored);
     url.searchParams.delete("license");
     history.replaceState(
@@ -660,7 +668,7 @@ if ("serviceWorker" in navigator)
             applyingUpdate = true;
             registration.waiting?.postMessage("SKIP_WAITING");
           });
-          document.body.append(toast);
+          document.querySelector("#app-updates")?.append(toast);
         };
         offerUpdate();
         registration.addEventListener("updatefound", () =>

@@ -19,36 +19,13 @@
       "src_main_move",
       "src_main_position",
       "src_main_replay",
+      "src_main_resetpracticestate",
       "src_main_setupcanvas",
       "src_main_starttimer",
       "src_main_stoptimer",
       "src_main_syncmarkcontrols"
     ],
     "1": [
-      "src_main_bind",
-      "src_main_capturereturnedlicense",
-      "src_main_isapproute",
-      "src_main_nav",
-      "src_main_render",
-      "src_main_route",
-      "src_main_savesession",
-      "src_main_verifylicense",
-      "src_main_verifystoredlicense",
-      "src_storage",
-      "src_storage_appdata",
-      "src_storage_cleardemodata",
-      "src_storage_isdemo",
-      "src_storage_loaddata",
-      "src_storage_mirrortoindexeddb",
-      "src_storage_pendingmirror",
-      "src_storage_resetdemo",
-      "src_storage_savedata",
-      "src_storage_seeddemo",
-      "src_storage_session",
-      "src_storage_stroke",
-      "src_storage_withpracticestore"
-    ],
-    "2": [
       "ref_dom",
       "ref_dom_iterable",
       "ref_es2022",
@@ -70,7 +47,7 @@
       "tsconfig_compileroptions_usedefineforclassfields",
       "tsconfig_include"
     ],
-    "3": [
+    "2": [
       "axe_core_playwright",
       "eslint",
       "eslint_js",
@@ -91,7 +68,7 @@
       "vite",
       "vitest"
     ],
-    "4": [
+    "3": [
       "package",
       "package_name",
       "package_private",
@@ -107,7 +84,38 @@
       "package_type",
       "package_version"
     ],
+    "4": [
+      "src_storage",
+      "src_storage_appdata",
+      "src_storage_cleardemodata",
+      "src_storage_demodata",
+      "src_storage_importprogress",
+      "src_storage_isrecord",
+      "src_storage_mirrortoindexeddb",
+      "src_storage_pendingmirror",
+      "src_storage_resetdemo",
+      "src_storage_samplestroke",
+      "src_storage_seeddemo",
+      "src_storage_session",
+      "src_storage_stroke",
+      "src_storage_withpracticestore"
+    ],
     "5": [
+      "src_main_bind",
+      "src_main_capturereturnedlicense",
+      "src_main_importdata",
+      "src_main_isapproute",
+      "src_main_nav",
+      "src_main_render",
+      "src_main_route",
+      "src_main_savesession",
+      "src_main_verifylicense",
+      "src_main_verifystoredlicense",
+      "src_storage_isdemo",
+      "src_storage_loaddata",
+      "src_storage_savedata"
+    ],
+    "6": [
       "src_main_appview",
       "src_main_days",
       "src_main_demobar",
@@ -119,7 +127,7 @@
       "src_main_notfound",
       "src_main_savedtakes"
     ],
-    "6": [
+    "7": [
       "src_drills",
       "src_drills_drill",
       "src_drills_drillkind",
@@ -128,57 +136,63 @@
       "src_drills_sampleprogress",
       "tests_drills_test"
     ],
-    "7": [
+    "8": [
       "public_sw",
       "public_sw_app_routes",
       "public_sw_generated_assets",
       "public_sw_shell"
     ],
-    "8": [
+    "9": [
       "tests_product_spec",
       "tests_product_spec_demorecord",
       "tests_product_spec_drawpointerstroke",
       "tests_product_spec_guidepixelsnear"
     ],
-    "9": [
+    "10": [
       "vite_config",
       "vite_config_injectprecachemanifest"
     ],
-    "10": [
+    "11": [
       "eslint_config"
     ],
-    "11": [
+    "12": [
       "playwright_config"
     ]
   },
   "cohesion": {
-    "0": 0.22077922077922077,
-    "1": 0.19913419913419914,
-    "2": 0.1,
-    "3": 0.10526315789473684,
-    "4": 0.14285714285714285,
-    "5": 0.28888888888888886,
-    "6": 0.3333333333333333,
-    "7": 0.5,
+    "0": 0.20948616600790515,
+    "1": 0.1,
+    "2": 0.10526315789473684,
+    "3": 0.14285714285714285,
+    "4": 0.21978021978021978,
+    "5": 0.358974358974359,
+    "6": 0.28888888888888886,
+    "7": 0.3333333333333333,
     "8": 0.5,
-    "9": 1.0,
+    "9": 0.5,
     "10": 1.0,
-    "11": 1.0
+    "11": 1.0,
+    "12": 1.0
   },
   "gods": [
     {
       "id": "src_main_bind",
       "label": "bind()",
-      "degree": 17
+      "degree": 19
     },
     {
       "id": "src_main_render",
       "label": "render()",
-      "degree": 16
+      "degree": 17
     },
     {
       "id": "tsconfig_compileroptions",
       "label": "compilerOptions",
+      "degree": 11
+    },
+    {
+      "id": "src_storage_savedata",
+      "label": "saveData()",
       "degree": 11
     },
     {
@@ -187,13 +201,8 @@
       "degree": 10
     },
     {
-      "id": "src_storage_savedata",
-      "label": "saveData()",
-      "degree": 10
-    },
-    {
-      "id": "src_main_drawnow",
-      "label": "drawNow()",
+      "id": "package_scripts",
+      "label": "scripts",
       "degree": 9
     },
     {
@@ -202,8 +211,8 @@
       "degree": 9
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
+      "id": "src_main_drawnow",
+      "label": "drawNow()",
       "degree": 9
     },
     {
@@ -212,12 +221,23 @@
       "degree": 8
     },
     {
-      "id": "src_main_keyboarddraw",
-      "label": "keyboardDraw()",
+      "id": "src_main_setupcanvas",
+      "label": "setupCanvas()",
       "degree": 7
     }
   ],
   "surprises": [
+    {
+      "source": "demoBar()",
+      "target": "isDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
     {
       "source": "appView()",
       "target": "isDemo()",
@@ -230,8 +250,8 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "demoBar()",
-      "target": "isDemo()",
+      "source": "render()",
+      "target": "seedDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -249,7 +269,7 @@
       ],
       "confidence": "EXTRACTED",
       "relation": "calls",
-      "why": "cross-file semantic connection"
+      "why": "bridges separate communities"
     },
     {
       "source": "bind()",
@@ -260,18 +280,7 @@
       ],
       "confidence": "EXTRACTED",
       "relation": "calls",
-      "why": "cross-file semantic connection"
-    },
-    {
-      "source": "bind()",
-      "target": "saveData()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "cross-file semantic connection"
+      "why": "bridges separate communities"
     }
   ],
   "tokens": {

@@ -2,9 +2,11 @@
 
 Open `/demo` or select **Try it with sample data**. The demo starts on the
 "Rail lines" drill with two completed sample sessions. Its data uses the
-`demo:touch-canvas-drills:` local storage namespace. The banner remains visible
-while in demo mode. **Reset demo** deletes and reseeds only that namespace.
-**Start for real** leaves the demo and discards its namespace.
+`demo:touch-canvas-drills:data` key in both localStorage and the
+`touch-canvas-drills` IndexedDB database. The banner remains visible while in
+demo mode. **Reset demo** deletes and reseeds only that namespace. **Start for
+real** waits for pending writes, deletes the demo record from both stores, and
+then opens `/practice`.
 
 The sample drill definitions are bundled with the application, so the demo can
 be used after the first visit with the network off.

@@ -1,30 +1,77 @@
-# Touch Canvas Drills handoff — FAIL
+# Touch Canvas Drills repair handoff
 
-Independent verification on 2026-08-28 rejected candidate
-`64397278d69c6397bc9cf073443c35869b43ead5` at
-https://touch-canvas-drills.sociobot.in. The live assets byte-match that
-candidate.
+## Repair scope
 
-Local installation/build and all five existing Playwright tests pass. All four
-declared claim commands pass. This is not acceptance: the claim test for
-offline use warms `/demo` with a second online navigation and misses the
-ordinary first-visit failure.
+Repaired every finding in independent report commit
+`832d30d35f4cebe608a94ca04bf1f6568b2ba6a7` for candidate
+`64397278d69c6397bc9cf073443c35869b43ead5`.
 
-Release blockers:
+- The production worker now precaches `/practice`, `/demo`, legal routes, and
+  the exact hashed build assets. The offline claim starts at `/`, settles the
+  worker, disconnects, and opens previously unvisited `/practice`.
+- Reset and Start for real now serialize pending IndexedDB writes and remove
+  `demo:touch-canvas-drills:data` from localStorage and IndexedDB. Reset then
+  reseeds only the demo namespace.
+- The focusable drawing pad now supports Space/Enter pen control, Arrow-key
+  drawing, Shift for longer steps, Escape to clear, a visible cursor, and live
+  instructions. The regression reaches it using Tab and saves a real stroke.
+- Header, demo, update, and footer controls have 44px minimum targets. At
+  390px, observed targets range from 44px to 118px wide and are all 44px high.
+- Vite emits hashed JS/CSS and injects those names into the worker. The deploy
+  root now includes `staticwebapp.config.json` with CSP, no-cache shell rules,
+  immutable one-year asset caching, explicit app rewrites, and a real 404
+  override.
+- Saved takes are listed and replayable after refresh. Stored strokes are
+  cloned so later drawing cannot mutate an earlier take.
+- Triangle trio, Diamond grid, and Leaf pair now render named geometry instead
+  of the generic ring guide.
+- `.factory/claims.json` now covers all ten visitor-reliant claims. Each claim
+  has exactly one tagged browser regression and a clean demo sandbox recipe.
+- Static offline and 404 pages now retain the product style, landmarks, one
+  heading, 44px links, and a route back.
 
-- first landing visit followed by offline `/practice` shows the fallback page,
-  contradicting “Works offline after the first visit”;
-- `Start for real` leaves sample data in IndexedDB;
-- the core drawing canvas is not keyboard-reachable or operable;
-- multiple mobile nav/demo/footer touch controls are under 44px high;
-- the deployed artifact has no CSP and assets use a 30-second cache lifetime,
-  because `staticwebapp.config.json` is not emitted into `dist/`.
+## Verification evidence
 
-Other material gaps: saved strokes cannot be replayed after a refresh, some
-named shape drills draw a generic circle guide, the claims registry omits
-several public claims, and unknown URLs return HTTP 200.
+Run on 2026-08-28 from a clean `npm ci`:
 
-See `.factory/verification.md` for commands, full observed results, severity,
-and repair/retest steps. The unlock endpoint rate limit was exercised: 30
-invalid verification requests were accepted and request 31 returned 429 with
-`Retry-After: 4`.
+- `npm audit --audit-level=high` — 0 vulnerabilities.
+- `npm run lint` — pass.
+- `npm run typecheck` — pass.
+- `npm run test:unit` — 1/1 pass.
+- `npm test` — 14/14 Playwright tests pass against the production build.
+- Every command in `.factory/claims.json` was run separately — ten commands,
+  each selecting and passing exactly one tagged test.
+- `npm run build` — pass; `dist/index.html` and
+  `dist/staticwebapp.config.json` are at the deploy root.
+- Production payload: JS 24.14 KB / 9.08 KB gzip; CSS 9.07 KB / 2.75 KB gzip;
+  hero WebP 177.28 KB.
+- Playwright axe on `/demo` — no serious or critical violations. The product
+  regression also checks one `h1`, a main landmark, keyboard drawing, visible
+  focus, target geometry, and no 390px overflow at normal or 200% text size.
+- `/opt/fleet/lib/verify-url.sh` on local `/demo` — title, `lang`, one `h1`,
+  main, alt text, labels, and console checks pass; zero console/page errors.
+- Lighthouse 12.8.2 on local `/demo`: Performance 99, Accessibility 100, Best
+  Practices 100, SEO 100; LCP 1.25s, CLS 0, TBT 130ms, interactive 1.34s.
+- Privacy regression records the whole demo draw/save/reset flow and observes
+  only same-origin requests. Paid behavior uses a recorded valid gateway
+  fixture; no test spends money or calls a provider directly.
+
+## Run and deploy
+
+```sh
+npm ci
+npm run test:all
+npm audit --audit-level=high
+npm run build
+/opt/fleet/lib/deploy-static.sh touch-canvas-drills dist
+```
+
+## Live deployment
+
+Deployment and post-deploy identity/header/offline checks are recorded in the
+final repair commit after upload.
+
+## Known gaps
+
+No release-blocking verifier finding remains locally. The independent
+`.factory/verification.md` is preserved unchanged as the source report.

@@ -6,10 +6,11 @@ and works as an installable offline-first web app after the first visit.
 ## What it does
 
 - Gives 20 timed line, curve, and shape drills.
-- Draw with a finger or stylus, replay the marks, and export one drill as PNG.
-- Saves progress only in the browser and shows a seven-day calendar.
+- Draw with a finger, stylus, or keyboard, then export one drill as PNG.
+- Saves progress only in the browser, shows seven days, and replays saved marks.
+- Exports progress as JSON so it can be kept outside the browser.
 - Includes an isolated demo at `/demo` with sample sessions. Demo data uses a
-  separate `demo:touch-canvas-drills:` browser-storage key.
+  separate `demo:touch-canvas-drills:data` key in localStorage and IndexedDB.
 
 The free core practice is complete. A $6 one-time Sociobot license enables
 private drill notes and the printable week sheet. The app does not upload
@@ -20,6 +21,8 @@ artwork or use third-party analytics.
 ```sh
 npm install
 npm run dev
+npm run lint
+npm run typecheck
 npm run test:unit
 npm test
 npm run build
@@ -30,8 +33,9 @@ The static deploy output is `dist/`, with `index.html` at its root. Use
 
 ## Deployment
 
-Deploy `dist/` as a static app. The included `staticwebapp.config.json` adds
-SPA routing, a styled 404 response, and security headers. The factory registers
+Deploy `dist/` as a static app. The emitted `staticwebapp.config.json` adds
+explicit app routes, a styled 404 response, security headers, and immutable
+caching for hashed assets. The factory registers
 the paid product; no credentials are stored in this repository.
 
 ## Privacy and terms

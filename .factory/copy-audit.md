@@ -18,5 +18,13 @@
 | Your sessions live in this browser. | 6 | pass |
 | There is no account, upload, social feed, or automated critique. | 10 | pass |
 | Export a single drill image when you want a copy. | 11 | pass |
+| Paid extras add private drill notes and a printable seven-day practice sheet. | 12 | pass |
+| The 20 drills, progress, and image export stay free. | 10 | pass |
+| Small touch drills for steadier drawing. | 6 | pass |
 
-No banned terms appear. Terminology: drill → a timed guided exercise; session → one saved drill; marks → the lines the user draws; demo → sample data in a separate storage namespace; extras → the optional paid note and print features.
+No sentence exceeds 22 words and no banned term appears. Read aloud, the first
+screen states the job, audience, first action, and its result in one breath.
+
+Terminology: drill → a timed guided exercise; session → one saved drill; marks
+→ the lines the user draws; demo → sample data in a separate storage namespace;
+extras → the optional paid note and print features.

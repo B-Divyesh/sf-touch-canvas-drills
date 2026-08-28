@@ -119,6 +119,10 @@ textarea:focus-visible {
   color: var(--ink);
   text-decoration: none;
   letter-spacing: -1px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .wordmark span {
   display: inline-block;
@@ -136,6 +140,11 @@ textarea:focus-visible {
 }
 .nav a {
   color: var(--ink);
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 main {
   min-height: calc(100vh - 186px);
@@ -299,6 +308,17 @@ h3 {
 .footer p {
   margin: 0;
 }
+.footer nav {
+  display: flex;
+  gap: 8px;
+}
+.footer a {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .demo-bar {
   background: var(--blue);
   color: white;
@@ -310,9 +330,10 @@ h3 {
   font-size: 0.9rem;
 }
 .demo-bar button {
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
   font-size: 0.8rem;
-  padding: 4px 8px;
+  padding: 8px 10px;
   box-shadow: none;
   border-color: white;
   background: white;
@@ -323,6 +344,7 @@ h3 {
   align-items: end;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
 }
 .app-head h1 {
   font-size: clamp(2rem, 6vw, 3.6rem);
@@ -425,6 +447,10 @@ h3 {
   border: 2px solid var(--ink);
   cursor: crosshair;
 }
+.drill-canvas:focus-visible {
+  outline: 5px solid var(--blue);
+  outline-offset: 4px;
+}
 .canvas-help {
   padding: 0 14px;
   font-size: 0.84rem;
@@ -449,6 +475,9 @@ h3 {
   gap: 20px;
   padding: 20px 0 44px;
 }
+.progress-panel > * {
+  min-width: 0;
+}
 .calendar,
 .settings {
   border: 3px solid var(--ink);
@@ -457,7 +486,7 @@ h3 {
 }
 .days {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
 }
 .day {
@@ -471,6 +500,25 @@ h3 {
   background: var(--yellow);
   border: 2px solid var(--ink);
   font-weight: 900;
+}
+.saved-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 10px;
+}
+.saved-list li {
+  border-top: 2px solid var(--line);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.saved-list span,
+.saved-list small {
+  display: block;
 }
 .settings label {
   display: block;
@@ -524,8 +572,8 @@ h3 {
   font-weight: 800;
 }
 .update-toast button {
-  min-height: 36px;
-  padding: 5px 8px;
+  min-height: 44px;
+  padding: 8px;
   box-shadow: none;
   white-space: nowrap;
 }
@@ -543,10 +591,14 @@ h3 {
 @media (max-width: 700px) {
   .topbar {
     min-height: 64px;
+    flex-wrap: wrap;
+    padding-block: 8px;
   }
   .nav {
-    gap: 10px;
+    gap: 4px;
     font-size: 0.82rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
   .hero {
     grid-template-columns: 1fr;
@@ -580,6 +632,10 @@ h3 {
   }
   .footer p {
     margin: 8px 0;
+  }
+  .saved-list li {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -1,4 +1,4 @@
 {
-  "compilerOptions": {"target":"ES2022","useDefineForClassFields":true,"module":"ESNext","lib":["ES2022","DOM","DOM.Iterable"],"types":["vite/client"],"skipLibCheck":true,"moduleResolution":"bundler","allowImportingTsExtensions":false,"noEmit":true,"strict":true},
+  "compilerOptions": {"target":"ES2022","useDefineForClassFields":true,"module":"ESNext","lib":["ES2022","DOM","DOM.Iterable"],"types":["vite/client","node"],"skipLibCheck":true,"moduleResolution":"bundler","allowImportingTsExtensions":false,"noEmit":true,"strict":true},
   "include": ["src", "tests"]
 }

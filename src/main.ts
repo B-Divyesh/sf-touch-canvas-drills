@@ -2,6 +2,7 @@ import "./style.css";
 import heroUrl from "../assets/src/cassette-drill.webp?url";
 import { drills, type Drill } from "./drills";
 import {
+  clearDemoData,
   isDemo,
   loadData,
   resetDemo,
@@ -20,6 +21,8 @@ let timer: number | undefined;
 let activePointer: number | undefined;
 let recordingStart = 0;
 let statusText = "";
+let keyboardCursor = { x: 450, y: 338 };
+let keyboardDrawing = false;
 
 function esc(value: string) {
   return value.replace(
@@ -43,7 +46,7 @@ function nav(path: string) {
   );
 }
 function footer() {
-  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><p><a href="/privacy" data-link>Privacy</a> · <a href="/terms" data-link>Terms</a> · Built by Param Factory · v1.0.0</p></footer>`;
+  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.1</p></footer>`;
 }
 function header() {
   return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/demo" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
@@ -73,11 +76,25 @@ function days() {
   }
   return out.join("");
 }
+
+function savedTakes() {
+  const saved = [...data.sessions]
+    .filter((session) => session.strokes.length)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5);
+  if (!saved.length) return '<p>No saved marks yet. Save a drill to replay it here.</p>';
+  return `<ul class="saved-list">${saved.map((session) => {
+    const drill = drills.find((item) => item.id === session.drillId);
+    const date = new Date(session.date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return `<li><span><strong>${esc(drill?.title || "Saved drill")}</strong><small>${date}</small></span><button class="load-session secondary" data-session="${esc(session.id)}">Replay saved marks</button></li>`;
+  }).join("")}</ul>`;
+}
+
 function appView() {
   const drill = drills[chosen];
   const left = data.leftHanded ? "left" : "";
   document.title = `${isDemo() ? "Demo" : "Practice"} — Touch Canvas Drills`;
-  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" aria-label="Drawing area for ${drill.title}" role="img"></canvas></div><p class="canvas-help">Draw on the guide. Press Escape to clear. Keyboard users can choose drills and controls, then draw with a pointer.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p></article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. Core practice remains free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result">${data.licenseValid ? "Extras are active." : "No active extras license."}</p><button class="export-data secondary">Export progress JSON</button></article></section></main>${footer()}`;
+  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved takes</h3>${savedTakes()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. Core practice remains free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${data.licenseValid ? "Extras are active." : "No active extras license."}</p><button class="export-data secondary">Export progress JSON</button></article></section></main>${footer()}`;
 }
 function legal(kind: "privacy" | "terms") {
   const privacy = kind === "privacy";
@@ -97,6 +114,7 @@ function render() {
   else if (route() === "/privacy" || route() === "/terms")
     app.innerHTML = legal(route().slice(1) as "privacy" | "terms");
   else app.innerHTML = notFound();
+  document.querySelector("h1")?.setAttribute("tabindex", "-1");
   if (isAppRoute() && data.licenseValid) {
     document
       .querySelector(".save-note")
@@ -118,13 +136,14 @@ function bind() {
       nav(a.getAttribute("href")!);
     }),
   );
-  document.querySelector(".reset-demo")?.addEventListener("click", () => {
-    resetDemo();
+  document.querySelector(".reset-demo")?.addEventListener("click", async () => {
+    await resetDemo();
     statusText = "Demo reset to its sample sessions.";
     render();
   });
-  document.querySelector(".start-real")?.addEventListener("click", () => {
-    localStorage.removeItem("demo:touch-canvas-drills:data");
+  document.querySelector(".start-real")?.addEventListener("click", async () => {
+    await clearDemoData();
+    statusText = "Demo data discarded. This is your practice space.";
     nav("/practice");
   });
   document.querySelector(".hand-toggle")?.addEventListener("click", () => {
@@ -136,6 +155,9 @@ function bind() {
     b.addEventListener("click", () => {
       chosen = Number(b.dataset.drill);
       current = [];
+      keyboardDrawing = false;
+      keyboardCursor = { x: 450, y: 338 };
+      recordingStart = 0;
       seconds = drills[chosen].seconds;
       stopTimer();
       statusText = "New guide ready. Your timer starts when you draw.";
@@ -144,12 +166,33 @@ function bind() {
   );
   document.querySelector(".clear")?.addEventListener("click", () => {
     current = [];
+    keyboardDrawing = false;
+    keyboardCursor = { x: 450, y: 338 };
+    recordingStart = 0;
     seconds = drills[chosen].seconds;
     stopTimer();
     statusText = "Marks cleared. Try the guide again.";
     setupCanvas();
   });
   document.querySelector(".replay")?.addEventListener("click", replay);
+  document.querySelectorAll<HTMLButtonElement>(".load-session").forEach((button) =>
+    button.addEventListener("click", () => {
+      const session = data.sessions.find((item) => item.id === button.dataset.session);
+      if (!session) return;
+      const index = drills.findIndex((item) => item.id === session.drillId);
+      if (index >= 0) chosen = index;
+      current = structuredClone(session.strokes);
+      seconds = Math.max(0, drills[chosen].seconds - session.seconds);
+      recordingStart = 0;
+      keyboardDrawing = false;
+      statusText = `Loaded saved ${drills[chosen].title} marks.`;
+      render();
+      requestAnimationFrame(() => {
+        replay();
+        canvas().focus();
+      });
+    }),
+  );
   document
     .querySelector(".save-session")
     ?.addEventListener("click", saveSession);
@@ -169,8 +212,10 @@ function bind() {
     .querySelector(".verify-license")
     ?.addEventListener("click", verifyLicense);
   window.onkeydown = (e) => {
-    if (isAppRoute() && e.key === "Escape") {
+    if (isAppRoute() && e.key === "Escape" && !document.querySelector(".drill-canvas:focus")) {
       current = [];
+      keyboardDrawing = false;
+      recordingStart = 0;
       seconds = drills[chosen].seconds;
       stopTimer();
       statusText = "Marks cleared.";
@@ -190,6 +235,12 @@ function setupCanvas() {
   c.onpointermove = move;
   c.onpointerup = end;
   c.onpointercancel = end;
+  c.onkeydown = keyboardDraw;
+  c.onfocus = drawNow;
+  c.onblur = () => {
+    keyboardDrawing = false;
+    drawNow();
+  };
 }
 function drawGuide(ctx: CanvasRenderingContext2D, d: Drill) {
   ctx.clearRect(0, 0, 900, 675);
@@ -229,6 +280,35 @@ function drawGuide(ctx: CanvasRenderingContext2D, d: Drill) {
       ctx.lineTo(...p(0.5 + Math.sin(a) * 0.36, 0.25 + Math.cos(a) * 0.25));
       ctx.stroke();
     }
+  else if (d.guide === "triangles")
+    for (const center of [0.22, 0.5, 0.78]) {
+      ctx.beginPath();
+      ctx.moveTo(...p(center, 0.2));
+      ctx.lineTo(...p(center - 0.13, 0.7));
+      ctx.lineTo(...p(center + 0.13, 0.7));
+      ctx.closePath();
+      ctx.stroke();
+    }
+  else if (d.guide === "diamonds")
+    for (const centerX of [0.25, 0.5, 0.75])
+      for (const centerY of [0.32, 0.68]) {
+        ctx.beginPath();
+        ctx.moveTo(...p(centerX, centerY - 0.14));
+        ctx.lineTo(...p(centerX + 0.1, centerY));
+        ctx.lineTo(...p(centerX, centerY + 0.14));
+        ctx.lineTo(...p(centerX - 0.1, centerY));
+        ctx.closePath();
+        ctx.stroke();
+      }
+  else if (d.guide === "leaves") {
+    for (const [start, end, bend] of [[0.12, 0.48, -0.18], [0.5, 0.88, 0.18]] as const) {
+      ctx.beginPath();
+      ctx.moveTo(...p(start, 0.5));
+      ctx.bezierCurveTo(...p(start + 0.1, 0.5 + bend), ...p(end - 0.1, 0.5 + bend), ...p(end, 0.5));
+      ctx.bezierCurveTo(...p(end - 0.1, 0.5 - bend), ...p(start + 0.1, 0.5 - bend), ...p(start, 0.5));
+      ctx.stroke();
+    }
+  }
   else {
     ctx.setLineDash([10, 10]);
     for (let i = 0; i < 5; i++) {
@@ -238,14 +318,16 @@ function drawGuide(ctx: CanvasRenderingContext2D, d: Drill) {
           const r = 0.04 + t * 0.018;
           const x = 0.5 + Math.cos(t) * r,
             y = 0.5 + Math.sin(t) * r;
-          t ? ctx.lineTo(...p(x, y)) : ctx.moveTo(...p(x, y));
+          if (t) ctx.lineTo(...p(x, y));
+          else ctx.moveTo(...p(x, y));
         }
       } else if (d.guide === "wave" || d.guide === "s") {
         for (let x = 0.12; x <= 0.88; x += 0.02) {
           const y =
             0.5 +
             Math.sin((x - 0.12) * Math.PI * (d.guide === "s" ? 2 : 6)) * 0.17;
-          x === 0.12 ? ctx.moveTo(...p(x, y)) : ctx.lineTo(...p(x, y));
+          if (x === 0.12) ctx.moveTo(...p(x, y));
+          else ctx.lineTo(...p(x, y));
         }
       } else if (d.guide === "c" || d.guide === "arc") {
         ctx.arc(450, 338, (i + 1) * 46, Math.PI * 0.18, Math.PI * 1.82);
@@ -269,7 +351,8 @@ function drawGuide(ctx: CanvasRenderingContext2D, d: Drill) {
                 r) /
                 675;
           }
-          t ? ctx.lineTo(...p(x, y)) : ctx.moveTo(...p(x, y));
+          if (t) ctx.lineTo(...p(x, y));
+          else ctx.moveTo(...p(x, y));
         }
       }
       ctx.stroke();
@@ -319,15 +402,83 @@ function move(e: PointerEvent) {
 }
 function end(e: PointerEvent) {
   if (e.pointerId === activePointer) activePointer = undefined;
+  enableMarkControls();
+}
+function enableMarkControls() {
   const save = document.querySelector<HTMLButtonElement>(".save-session");
   const replayBtn = document.querySelector<HTMLButtonElement>(".replay");
   if (save) save.disabled = false;
   if (replayBtn) replayBtn.disabled = false;
 }
+function keyboardDraw(e: KeyboardEvent) {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    current = [];
+    keyboardDrawing = false;
+    keyboardCursor = { x: 450, y: 338 };
+    recordingStart = 0;
+    seconds = drills[chosen].seconds;
+    stopTimer();
+    statusText = "Marks cleared. Keyboard pen is at the center.";
+    drawNow();
+    announceStatus();
+    return;
+  }
+  if (e.key === " " || e.key === "Enter") {
+    e.preventDefault();
+    keyboardDrawing = !keyboardDrawing;
+    if (keyboardDrawing) {
+      if (!recordingStart) {
+        recordingStart = performance.now();
+        startTimer();
+      }
+      current.push({ points: [{ ...keyboardCursor, t: performance.now() - recordingStart }], color: "#bd3d35", width: 8 });
+      statusText = "Keyboard pen down. Use the Arrow keys to draw.";
+    } else {
+      enableMarkControls();
+      statusText = "Keyboard pen lifted. Replay or save your marks.";
+    }
+    drawNow();
+    announceStatus();
+    return;
+  }
+  const direction: Record<string, [number, number]> = {
+    ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1],
+  };
+  const delta = direction[e.key];
+  if (!delta) return;
+  e.preventDefault();
+  const step = e.shiftKey ? 32 : 12;
+  keyboardCursor.x = Math.max(8, Math.min(892, keyboardCursor.x + delta[0] * step));
+  keyboardCursor.y = Math.max(8, Math.min(667, keyboardCursor.y + delta[1] * step));
+  if (keyboardDrawing) {
+    current.at(-1)?.points.push({ ...keyboardCursor, t: performance.now() - recordingStart });
+    enableMarkControls();
+  }
+  drawNow();
+}
+function announceStatus() {
+  const status = document.querySelector(".status");
+  if (status) status.textContent = statusText;
+}
 function drawNow() {
   const ctx = canvas().getContext("2d")!;
   drawGuide(ctx, drills[chosen]);
   drawAll(ctx, current);
+  if (document.activeElement === canvas()) {
+    ctx.save();
+    ctx.strokeStyle = "#075d8c";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(keyboardCursor.x, keyboardCursor.y, 13, 0, Math.PI * 2);
+    ctx.moveTo(keyboardCursor.x - 19, keyboardCursor.y);
+    ctx.lineTo(keyboardCursor.x + 19, keyboardCursor.y);
+    ctx.moveTo(keyboardCursor.x, keyboardCursor.y - 19);
+    ctx.lineTo(keyboardCursor.x, keyboardCursor.y + 19);
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 function startTimer() {
   stopTimer();
@@ -353,7 +504,7 @@ function saveSession() {
     id: crypto.randomUUID(),
     drillId: drills[chosen].id,
     date: new Date().toISOString(),
-    strokes: current,
+    strokes: structuredClone(current),
     seconds: drills[chosen].seconds - seconds,
   });
   saveData(data);
@@ -483,7 +634,10 @@ function captureReturnedLicense() {
     );
   }
 }
-window.addEventListener("popstate", render);
+window.addEventListener("popstate", () => {
+  render();
+  requestAnimationFrame(() => document.querySelector<HTMLElement>("h1")?.focus());
+});
 captureReturnedLicense();
 render();
 if ("serviceWorker" in navigator)

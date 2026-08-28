@@ -79,7 +79,7 @@ Results on 2026-08-28 UTC:
 
 ## Deployment and live checks
 
-Repair commit `a6ca65ecf7279113316446eef70c8bb31b6c6e90` was pushed to `main` and its
+Repair commit `a6ca65e036dd50b2b4f846f5a3b265c79d29688a` was pushed to `main` and its
 `dist/` was uploaded to the existing production Azure Static Web App. No DNS,
 billing, or infrastructure configuration was changed.
 

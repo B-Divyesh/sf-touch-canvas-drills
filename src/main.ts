@@ -114,6 +114,9 @@ function render() {
   else if (route() === "/privacy" || route() === "/terms")
     app.innerHTML = legal(route().slice(1) as "privacy" | "terms");
   else app.innerHTML = notFound();
+  const canonicalPath = ["/", "/demo", "/practice", "/privacy", "/terms"].includes(route()) ? route() : "/";
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", `https://touch-canvas-drills.sociobot.in${canonicalPath}`);
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute("content", document.title);
   document.querySelector("h1")?.setAttribute("tabindex", "-1");
   if (isAppRoute() && data.licenseValid) {
     document

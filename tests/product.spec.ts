@@ -52,6 +52,7 @@ test('accessibility smoke check has no serious or critical violations', async ({
 test('@claim:twenty-drills demo loads all 20 guided drills', async ({ page }) => {
   await page.goto('/demo');
   await expect(page.getByRole('heading', { name: 'Make one steadier mark' })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://touch-canvas-drills.sociobot.in/demo');
   await expect(page.locator('[data-drill]')).toHaveCount(20);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
 });

@@ -1,0 +1,6 @@
+[
+  {"id":"twenty-drills","claim":"Includes 20 guided drills","where":"landing hero, practice list","test":"npm test -- --grep @claim:twenty-drills","sandbox":"fresh browser context; open /demo; count the drill controls"},
+  {"id":"png-export","claim":"Exports a single drill image","where":"practice toolbar, privacy section","test":"npm test -- --grep @claim:png-export","sandbox":"demo; draw a pointer stroke; download Export PNG"},
+  {"id":"privacy-local","claim":"Your strokes stay on this device","where":"landing facts, privacy page","test":"npm test -- --grep @claim:privacy-local","sandbox":"fresh demo context; record all page requests through reset"},
+  {"id":"offline-reload","claim":"Works offline after the first visit","where":"landing fact, README","test":"npm test -- --grep @claim:offline-reload","sandbox":"load /demo; await service worker; set browser offline; reload /demo"}
+]

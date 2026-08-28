@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://touch-canvas-drills.sociobot.in/sitemap.xml

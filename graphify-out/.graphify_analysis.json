@@ -167,11 +167,6 @@
       "degree": 8
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
-      "degree": 7
-    },
-    {
       "id": "src_main_canvas",
       "label": "canvas()",
       "degree": 7
@@ -182,23 +177,17 @@
       "degree": 7
     },
     {
-      "id": "src_main_setupcanvas",
-      "label": "setupCanvas()",
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 7
+    },
+    {
+      "id": "src_main_replay",
+      "label": "replay()",
       "degree": 6
     }
   ],
   "surprises": [
-    {
-      "source": "demoBar()",
-      "target": "isDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
     {
       "source": "appView()",
       "target": "isDemo()",
@@ -211,7 +200,7 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "render()",
+      "source": "demoBar()",
       "target": "isDemo()",
       "source_files": [
         "src/main.ts",
@@ -219,11 +208,11 @@
       ],
       "confidence": "EXTRACTED",
       "relation": "calls",
-      "why": "cross-file semantic connection"
+      "why": "bridges separate communities"
     },
     {
-      "source": "render()",
-      "target": "loadData()",
+      "source": "bind()",
+      "target": "resetDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -233,8 +222,19 @@
       "why": "cross-file semantic connection"
     },
     {
-      "source": "render()",
-      "target": "seedDemo()",
+      "source": "bind()",
+      "target": "saveData()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "captureReturnedLicense()",
+      "target": "isDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

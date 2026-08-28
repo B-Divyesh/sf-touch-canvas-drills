@@ -1,30 +1,6 @@
 {
   "communities": {
     "0": [
-      "src_main",
-      "src_main_announcestatus",
-      "src_main_appview",
-      "src_main_current",
-      "src_main_days",
-      "src_main_demobar",
-      "src_main_download",
-      "src_main_enablemarkcontrols",
-      "src_main_end",
-      "src_main_esc",
-      "src_main_exportdata",
-      "src_main_exportpng",
-      "src_main_footer",
-      "src_main_header",
-      "src_main_keyboardcursor",
-      "src_main_keyboarddraw",
-      "src_main_landing",
-      "src_main_legal",
-      "src_main_notfound",
-      "src_main_savedtakes",
-      "src_main_starttimer",
-      "src_main_stoptimer"
-    ],
-    "1": [
       "src_main_bind",
       "src_main_capturereturnedlicense",
       "src_main_isapproute",
@@ -47,6 +23,29 @@
       "src_storage_session",
       "src_storage_stroke",
       "src_storage_withpracticestore"
+    ],
+    "1": [
+      "src_main",
+      "src_main_announcestatus",
+      "src_main_begin",
+      "src_main_canvas",
+      "src_main_current",
+      "src_main_download",
+      "src_main_drawall",
+      "src_main_drawguide",
+      "src_main_drawnow",
+      "src_main_enablemarkcontrols",
+      "src_main_end",
+      "src_main_exportdata",
+      "src_main_exportpng",
+      "src_main_keyboardcursor",
+      "src_main_keyboarddraw",
+      "src_main_move",
+      "src_main_position",
+      "src_main_replay",
+      "src_main_setupcanvas",
+      "src_main_starttimer",
+      "src_main_stoptimer"
     ],
     "2": [
       "ref_dom",
@@ -108,15 +107,16 @@
       "package_version"
     ],
     "5": [
-      "src_main_begin",
-      "src_main_canvas",
-      "src_main_drawall",
-      "src_main_drawguide",
-      "src_main_drawnow",
-      "src_main_move",
-      "src_main_position",
-      "src_main_replay",
-      "src_main_setupcanvas"
+      "src_main_appview",
+      "src_main_days",
+      "src_main_demobar",
+      "src_main_esc",
+      "src_main_footer",
+      "src_main_header",
+      "src_main_landing",
+      "src_main_legal",
+      "src_main_notfound",
+      "src_main_savedtakes"
     ],
     "6": [
       "src_drills",
@@ -151,12 +151,12 @@
     ]
   },
   "cohesion": {
-    "0": 0.18181818181818182,
-    "1": 0.19913419913419914,
+    "0": 0.19913419913419914,
+    "1": 0.22857142857142856,
     "2": 0.1,
     "3": 0.10526315789473684,
     "4": 0.14285714285714285,
-    "5": 0.4722222222222222,
+    "5": 0.28888888888888886,
     "6": 0.3333333333333333,
     "7": 0.5,
     "8": 0.5,
@@ -191,11 +191,6 @@
       "degree": 10
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
-      "degree": 9
-    },
-    {
       "id": "src_main_appview",
       "label": "appView()",
       "degree": 9
@@ -203,6 +198,11 @@
     {
       "id": "src_main_drawnow",
       "label": "drawNow()",
+      "degree": 9
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
       "degree": 9
     },
     {
@@ -218,17 +218,6 @@
   ],
   "surprises": [
     {
-      "source": "demoBar()",
-      "target": "isDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
-    {
       "source": "appView()",
       "target": "isDemo()",
       "source_files": [
@@ -240,7 +229,7 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "render()",
+      "source": "demoBar()",
       "target": "isDemo()",
       "source_files": [
         "src/main.ts",
@@ -248,11 +237,11 @@
       ],
       "confidence": "EXTRACTED",
       "relation": "calls",
-      "why": "cross-file semantic connection"
+      "why": "bridges separate communities"
     },
     {
-      "source": "render()",
-      "target": "loadData()",
+      "source": "bind()",
+      "target": "clearDemoData()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -262,8 +251,19 @@
       "why": "cross-file semantic connection"
     },
     {
-      "source": "render()",
-      "target": "seedDemo()",
+      "source": "bind()",
+      "target": "resetDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "bind()",
+      "target": "saveData()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

@@ -192,8 +192,8 @@
       "degree": 10
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
+      "id": "src_main_drawnow",
+      "label": "drawNow()",
       "degree": 9
     },
     {
@@ -202,8 +202,8 @@
       "degree": 9
     },
     {
-      "id": "src_main_drawnow",
-      "label": "drawNow()",
+      "id": "package_scripts",
+      "label": "scripts",
       "degree": 9
     },
     {
@@ -212,8 +212,8 @@
       "degree": 8
     },
     {
-      "id": "src_main_setupcanvas",
-      "label": "setupCanvas()",
+      "id": "src_main_keyboarddraw",
+      "label": "keyboardDraw()",
       "degree": 7
     }
   ],
@@ -252,8 +252,8 @@
       "why": "cross-file semantic connection"
     },
     {
-      "source": "captureReturnedLicense()",
-      "target": "isDemo()",
+      "source": "bind()",
+      "target": "resetDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -263,8 +263,8 @@
       "why": "cross-file semantic connection"
     },
     {
-      "source": "render()",
-      "target": "isDemo()",
+      "source": "bind()",
+      "target": "saveData()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

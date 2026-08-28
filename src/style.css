@@ -545,6 +545,15 @@ h3 {
   flex-wrap: wrap;
   align-items: center;
 }
+.import-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.import-result:empty {
+  display: none;
+}
 .notice {
   padding: 12px;
   border-left: 6px solid var(--coral);
@@ -594,6 +603,10 @@ h3 {
   white-space: nowrap;
   border: 0;
 }
+.settings input.sr-only {
+  width: 1px;
+  height: 1px;
+}
 @media (max-width: 700px) {
   .topbar {
     min-height: 64px;
@@ -608,11 +621,16 @@ h3 {
   }
   .hero {
     grid-template-columns: 1fr;
-    padding-top: 28px;
+    padding: 20px 16px 24px;
   }
   .hero-art {
-    max-width: 420px;
-    order: -1;
+    display: none;
+  }
+  .hero h1 {
+    font-size: clamp(2.3rem, 11vw, 3.2rem);
+  }
+  .hero-actions {
+    margin: 18px 0 14px;
   }
   .preview,
   .steps,
@@ -626,6 +644,13 @@ h3 {
   }
   .drill-list {
     order: 2;
+  }
+  .app-layout.left .drill-list {
+    order: -1;
+  }
+  .app-layout.left .deck-controls {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
   }
   .drill-list ol {
     max-height: 250px;

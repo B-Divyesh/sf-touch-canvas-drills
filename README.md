@@ -9,9 +9,10 @@ visit.
 - Gives 20 timed line, curve, and shape drills.
 - Draw with a finger, stylus, or keyboard, then export one drill as PNG.
 - Saves progress only in the browser, shows seven days, and replays saved marks.
-- Exports progress as JSON so it can be kept outside the browser.
-- Includes an isolated demo at `/demo` with sample sessions. Demo data uses a
+- Exports and imports validated progress JSON for backup or device moves.
+- Includes an isolated demo at `/demo` with two replayable sample sessions. Demo data uses a
   separate `demo:touch-canvas-drills:data` key in localStorage and IndexedDB.
+- Rearranges the phone controls for left-handed practice.
 
 The free core practice is complete. A $6 one-time Sociobot license enables
 private drill notes and the printable week sheet. The app does not upload

@@ -1,7 +1,8 @@
 # Demo sandbox
 
 Open `/demo` or select **Try it with sample data**. The demo starts on the
-"Rail lines" drill with two completed sample sessions. Its data uses the
+"Rail lines" drill with two completed, replayable sample sessions. The first
+contains two steady rail marks. The second contains two S-curve marks. Its data uses the
 `demo:touch-canvas-drills:data` key in both localStorage and the
 `touch-canvas-drills` IndexedDB database. The banner remains visible while in
 demo mode. **Reset demo** deletes and reseeds only that namespace. **Start for

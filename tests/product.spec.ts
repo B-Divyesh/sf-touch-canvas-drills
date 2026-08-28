@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 
 async function drawPointerStroke(page: Page) {
   const canvas = page.locator('canvas');
@@ -119,6 +119,14 @@ test('@claim:pwa-install app shell provides an installable manifest and service 
 test('@claim:demo-isolation reset reseeds and Start for real removes demo data from both stores', async ({ page }) => {
   await page.goto('/demo');
   await expect.poll(async () => demoRecord(page)).not.toBeNull();
+  const samples = await page.evaluate(() => JSON.parse(localStorage.getItem('demo:touch-canvas-drills:data') || '{}').sessions as { strokes: unknown[] }[]);
+  expect(samples).toHaveLength(2);
+  expect(samples.every(sample => sample.strokes.length > 0)).toBe(true);
+  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(2);
+  await page.getByRole('button', { name: 'Replay saved marks' }).first().click();
+  await expect(page.getByText(/Loaded saved Rail lines marks|Replay finished/)).toBeVisible();
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
   await drawPointerStroke(page);
   await page.getByRole('button', { name: 'Save this drill' }).click();
   await expect(page.getByText('3 saved drills on this device.')).toBeVisible();
@@ -127,6 +135,7 @@ test('@claim:demo-isolation reset reseeds and Start for real removes demo data f
   await expect.poll(async () => (await demoRecord(page) as { sessions?: unknown[] } | null)?.sessions?.length).toBe(2);
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page).toHaveURL(/\/practice$/);
+  await expect(page.getByRole('button', { name: 'Save this drill' })).toBeDisabled();
   expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
   expect(await demoRecord(page)).toBeNull();
 });
@@ -143,6 +152,32 @@ test('@claim:keyboard-drawing keyboard-only users can draw and save', async ({ p
   await expect(page.getByRole('button', { name: 'Save this drill' })).toBeEnabled();
   await page.getByRole('button', { name: 'Save this drill' }).click();
   await expect(page.getByText('1 saved drill on this device.')).toBeVisible();
+  const points = await page.evaluate(() => JSON.parse(localStorage.getItem('touch-canvas-drills:data') || '{}').sessions[0].strokes[0].points as { x: number; y: number }[]);
+  expect(points[1].x - points[0].x).toBe(12);
+  expect(points[2].y - points[1].y).toBe(32);
+  await canvas.focus();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Save this drill' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Replay marks' })).toBeDisabled();
+  await expect(page.locator('.status')).toHaveText('Marks cleared. Keyboard pen is at the center.');
+});
+
+test('@claim:handed-layout left-handed mode rearranges and persists the phone controls', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/practice');
+  const beforeDeck = await page.locator('.deck').boundingBox();
+  const beforeList = await page.locator('.drill-list').boundingBox();
+  expect(beforeDeck).not.toBeNull();
+  expect(beforeList).not.toBeNull();
+  expect(beforeDeck!.y).toBeLessThan(beforeList!.y);
+  await page.getByRole('button', { name: 'Right-handed layout' }).click();
+  const afterDeck = await page.locator('.deck').boundingBox();
+  const afterList = await page.locator('.drill-list').boundingBox();
+  expect(afterList!.y).toBeLessThan(afterDeck!.y);
+  expect(afterDeck!.y).not.toBe(beforeDeck!.y);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Left-handed layout' })).toHaveAttribute('aria-pressed', 'true');
+  expect((await page.locator('.drill-list').boundingBox())!.y).toBeLessThan((await page.locator('.deck').boundingBox())!.y);
 });
 
 test('@claim:saved-replay saved marks can be replayed after refresh', async ({ page }) => {
@@ -168,6 +203,31 @@ test('@claim:local-progress seven-day progress and JSON export contain the saved
   const exported = JSON.parse(await readFile(target, 'utf8')) as { sessions: { drillId: string }[] };
   expect(exported.sessions).toHaveLength(1);
   expect(exported.sessions[0].drillId).toBe('rail-lines');
+  expect((exported as { license?: string }).license).toBeUndefined();
+});
+
+test('@claim:progress-roundtrip validated JSON import restores progress without deleting existing data', async ({ page }, testInfo) => {
+  await page.goto('/practice');
+  await drawPointerStroke(page);
+  await page.getByRole('button', { name: 'Save this drill' }).click();
+  const pending = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export progress JSON' }).click();
+  const download = await pending;
+  const target = testInfo.outputPath('roundtrip-progress.json');
+  await download.saveAs(target);
+  await page.evaluate(() => localStorage.removeItem('touch-canvas-drills:data'));
+  await page.reload();
+  await expect(page.getByText('No saved drills yet. Save one after you draw.')).toBeVisible();
+  await page.locator('#progress-import').setInputFiles(target);
+  await expect(page.getByText('Imported 1 saved drill. Existing progress was kept.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(1);
+  await page.locator('#progress-import').setInputFiles({
+    name: 'unsafe.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"sessions":[{"id":"bad","drillId":"not-a-drill"}]}'),
+  });
+  await expect(page.getByText('Session 1 has invalid progress data.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(1);
 });
 
 test('@claim:free-core core drills, saving, and exports need no license', async ({ page }) => {
@@ -198,12 +258,20 @@ test('@claim:paid-extras the $6 checkout and valid license expose notes and prin
 });
 
 test('@claim:checkout-redirect live Sociobot checkout redirects to Dodo Live', async ({ request }) => {
+  const terms = await request.get('/terms');
+  expect(await terms.text()).toContain('<div id="app"></div>');
   const response = await request.get('https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout', { maxRedirects: 0 });
   expect(response.status()).toBe(303);
   const location = new URL(response.headers().location);
   expect(location.protocol).toBe('https:');
   expect(location.hostname).toBe('checkout.dodopayments.com');
   expect(location.pathname).toMatch(/^\/session\/cks_/);
+});
+
+test('@claim:merchant-refunds terms identify Sociobot as merchant of record for refunds', async ({ page }) => {
+  await page.goto('/terms');
+  await expect(page.getByText('Checkout, refunds, and license revocation are handled by Sociobot, the merchant of record.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Privacy' }).first()).toHaveAttribute('href', '/privacy');
 });
 
 test('@claim:invalid-license-lock invalid returned license locks all paid controls as soon as verification rejects it', async ({ page }) => {
@@ -348,6 +416,45 @@ test('390px navigation, demo, and footer touch targets are at least 44px', async
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+test('390px first screen shows the complete sample action and no false first-install update', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const action = page.getByRole('link', { name: 'Try it with sample data' });
+  const box = await action.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(844);
+  await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.ready).active));
+  await page.waitForTimeout(1200);
+  await expect(page.locator('.update-toast')).toHaveCount(0);
+  await expect(page.locator('#app-updates')).toHaveText('');
+});
+
+test('a genuine service-worker revision offers and applies an update', async ({ page }) => {
+  const workerPath = 'dist/sw.js';
+  const original = await readFile(workerPath, 'utf8');
+  try {
+    await page.goto('/');
+    await page.waitForFunction(async () => {
+      await navigator.serviceWorker.ready;
+      return navigator.serviceWorker.controller !== null;
+    });
+    await page.reload();
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+    await writeFile(workerPath, original.replace("touch-drills-v4", "touch-drills-v4-regression"));
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
+    await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
+    await Promise.all([
+      page.waitForEvent('load'),
+      page.getByRole('button', { name: 'Update app' }).click(),
+    ]);
+    await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v4-regression');
+  } finally {
+    await writeFile(workerPath, original);
+  }
 });
 
 test('built deployment policy ships CSP, immutable hashed assets, and a real 404 override', async ({ page, request }) => {

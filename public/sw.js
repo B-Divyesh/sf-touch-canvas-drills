@@ -1,4 +1,4 @@
-const CACHE = 'touch-drills-v3';
+const CACHE = 'touch-drills-v4';
 const GENERATED_ASSETS = [];
 const APP_ROUTES = ['/', '/practice', '/demo', '/privacy', '/terms'];
 const SHELL = [...APP_ROUTES, '/index.html', '/offline.html', '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png', ...GENERATED_ASSETS];

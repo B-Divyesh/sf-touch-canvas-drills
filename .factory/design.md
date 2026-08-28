@@ -43,6 +43,8 @@ One original hero illustration depicts a cassette case that becomes a drawing
 practice board. It is decoration and has a descriptive alt. Prompt sheet:
 editorial risograph illustration, weathered cream paper, ink black, electric
 blue and coral, halftone grains, top-down studio scene, no people, no brands,
-no text/no logos/no watermark. It will be generated with the factory image
-tool, inspected, converted to WebP, and stored locally. Generated image
-provenance is recorded beside the asset.
+no text/no logos/no watermark. It was generated on 2026-08-28 with the factory
+`factory-image` deployment, inspected, converted to WebP, and stored locally.
+The generated artwork is original to this product and ships under this
+repository's MIT license. Its exact prompt and generation settings are recorded
+beside the source asset.

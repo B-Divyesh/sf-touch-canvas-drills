@@ -43,7 +43,7 @@ Run on 2026-08-28 from a clean `npm ci`:
   each selecting and passing exactly one tagged test.
 - `npm run build` — pass; `dist/index.html` and
   `dist/staticwebapp.config.json` are at the deploy root.
-- Production payload: JS 24.14 KB / 9.08 KB gzip; CSS 9.07 KB / 2.75 KB gzip;
+- Production payload: JS 24.42 KB / 9.18 KB gzip; CSS 9.07 KB / 2.75 KB gzip;
   hero WebP 177.28 KB.
 - Playwright axe on `/demo` — no serious or critical violations. The product
   regression also checks one `h1`, a main landmark, keyboard drawing, visible
@@ -68,10 +68,38 @@ npm run build
 
 ## Live deployment
 
-Deployment and post-deploy identity/header/offline checks are recorded in the
-final repair commit after upload.
+Deployed commit `e8eee46` to the existing Standard Azure Static Web App in
+`centralus` with `/opt/fleet/lib/deploy-static.sh touch-canvas-drills dist`.
+Final upload ID: `a712fa1e-bd74-4b6b-a737-de11fa59bf1c`. The custom domain is
+Ready at <https://touch-canvas-drills.sociobot.in>.
+
+- Live `index.html` SHA-256 byte-matches `dist/index.html`:
+  `e470a6f0c791ba5c3a1e6774085e8a32617a6f7082edd19bf4fb4e93a8aee478`.
+- `/` returns 200 with CSP, `X-Content-Type-Options`, referrer policy, and
+  `Cache-Control: no-cache`.
+- `/assets/index-ByiGUL4k.js` returns 200 with
+  `Cache-Control: public, max-age=31536000, immutable`; `/sw.js` is `no-cache`.
+- `/not-a-real-route` returns HTTP 404 and the styled “That page is not on this
+  tape” document.
+- The live Sociobot identity endpoint for product `touch-canvas-drills`
+  returned 200 and `{valid:false, reason:"invalid"}` for one synthetic invalid
+  token. The live checkout link uses the same product slug.
+- The final live browser run observed zero console/page errors and no foreign
+  requests during the demo flow. Keyboard drawing enabled Save; the minimum
+  measured mobile target was 44px; 390px and 200% text both had 390px document
+  width.
+- From a fresh context, `/` was loaded and reloaded online, the connection was
+  disabled, and the previously unvisited `/practice` opened with the full pad.
+- Final live axe scan: 0 serious/critical findings. Final live Lighthouse:
+  Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 0.83s,
+  CLS 0, TBT 49.5ms.
+- `/opt/fleet/lib/verify-url.sh` passed on live `/demo`: correct route title,
+  `lang=en`, one `h1`, main landmark, image alternatives, labeled buttons, and
+  zero console errors.
 
 ## Known gaps
 
-No release-blocking verifier finding remains locally. The independent
-`.factory/verification.md` is preserved unchanged as the source report.
+No release-blocking verifier finding remains locally or on the deployed custom
+domain. The independent `.factory/verification.md` is preserved unchanged as
+the source report. Pre-existing uncommitted `graphify-out` changes were not
+modified or included in either repair commit.

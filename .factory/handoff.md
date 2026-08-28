@@ -75,8 +75,30 @@ npm run preview
 
 Target: Azure Static Web App `sf-touch-canvas-drills` in resource group
 `sociobot`, using the production `dist/` artifact and its
-`staticwebapp.config.json`. Live deployment identity and response checks are
-recorded below after deployment.
+`staticwebapp.config.json`.
+
+- Repair commit `32d94fd` was pushed to `origin/main` and deployed to the
+  production Static Web App on 2026-08-28 UTC. The CLI's generated local
+  credential file was deleted immediately after deployment.
+- All 15 public files byte-match the final local `dist/`, including the worker,
+  icons, art, offline/404 pages, and hashed assets. Local/live `index.html`
+  SHA-256 is `3a6d02c7cd82084388fbf5af231cef519b796d76f55118cab8c986690d2a2f05`.
+- Live shell responses are `no-cache`; hashed JS/CSS are
+  `public, max-age=31536000, immutable`; `sw.js` is `no-cache`. CSP, HSTS,
+  `nosniff`, and strict-origin referrer headers are present. An unknown route
+  returns HTTP 404.
+- Live 390×844 evidence: primary action bottom `472.9375`; no initial update
+  notice; demo sample stroke counts `[2, 2]`; two replay buttons; right-handed
+  deck/list y positions `282.1875/1003.5`; left-handed positions
+  `640.1875/282.1875`; no console or cross-origin ordinary-flow requests.
+- Live `/`, `/demo`, `/practice`, `/privacy`, `/terms`, and the styled 404 have
+  route titles, one h1, one main, and zero axe serious/critical findings. The
+  live factory URL verifier measured `/demo` at 571ms with no console errors.
+- Live Lighthouse mobile `/demo`: Performance 100, Accessibility 100, Best
+  Practices 100, SEO 100; LCP 0.9s, CLS 0, TBT 10ms.
+- Live Sociobot checkout returned HTTP 303 to an HTTPS Dodo checkout session.
+  Invalid-license requests 1–30 returned 200; request 31 returned 429 with
+  `Retry-After: 3`, confirming the live response limit.
 
 ## Known gaps
 

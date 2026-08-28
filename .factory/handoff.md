@@ -1,45 +1,50 @@
-# Touch Canvas Drills repair handoff
+# Touch Canvas Drills verification 3 handoff
 
 ## Result
 
-Release blockers from verifier report commit
-`89af889bd89e722575b9adc63c8f022ab92d4bd0` are repaired in version 1.0.2.
-The product remains a static, offline-first PWA with the original cassette-era
-zine design and the same free and paid feature boundaries.
+**FAIL — do not release.** Independent QA tested candidate
+`fb005ff6a6b2eb25cc4b923d387ea4ec95d44631` against
+<https://touch-canvas-drills.sociobot.in> on 2026-08-28 UTC. The deployed public
+files byte-match the candidate build, so this is not a stale-deployment result.
 
-Before code changes, the controller reproduction against the deployed
-candidate confirmed both relevant states:
+Full evidence and reproduction details are in
+`.factory/verification-3.md`. No product code was modified.
 
-- The newly registered checkout returned HTTP 303 to an HTTPS
-  `checkout.dodopayments.com/session/cks_…` Dodo Live URL.
-- `/practice?license=definitely-invalid-controller-repro` received
-  `{"valid":false,"reason":"invalid"}` but left the note enabled and the
-  Save note and Print practice week controls present.
+## What passed
 
-## Repairs
+- Clean `npm ci`, `npm run test:all`, `npm audit --audit-level=high`, and exact
+  `npm run build`.
+- All 16 exact commands in `.factory/claims.json`; 22/22 full Playwright tests
+  and 1/1 unit test.
+- Core pointer/touch/keyboard drawing, timer boundaries, save/replay,
+  PNG/JSON export, clear/reset, demo isolation, rejected-license lock, hosted
+  checkout, 30-request API allowance followed by 429 with `Retry-After`.
+- Offline navigation, genuine worker update, manifest installability, headers,
+  caching, real 404, no ordinary-flow cross-origin requests, no console errors,
+  and zero axe serious/critical findings.
+- Lighthouse mobile `/demo`: 99 Performance, 100 Accessibility, 100 Best
+  Practices, 100 SEO; LCP 1.0s, CLS 0, TBT 130ms.
 
-- A returned token is stored and stripped from the URL, but it remains locked
-  until verification succeeds. Invalid verification now rerenders the locked
-  note and print state immediately. A cached valid verdict remains available
-  offline and is refreshed at most once per day.
-- The purchase-terms link now uses ink text on yellow. Axe passes the landing
-  page and every other product route with no serious or critical violations.
-- Clear marks now disables Save this drill and Replay marks and announces the
-  empty state.
-- Reduced-motion replay now writes its completion message into the polite live
-  region.
-- The service-worker update notice is inserted into a named application-update
-  landmark. The skip link has an explicit 44px minimum target.
-- Cross-origin license verification bypasses the service-worker asset cache.
-  Same-origin app routes and hashed assets retain their prior offline policy.
-- The claims registry now covers installability, live checkout redirect,
-  invalid-license lockout, daily license caching, pressure independence, and
-  first-mark timer behavior. Each entry has one tagged browser test.
-- The worker cache and manifest start URL were versioned for the update.
+## Release blockers
 
-## Verification evidence
+- At 390×844 the primary sample action is below the first viewport, while a
+  false update prompt overlays the audience copy. The mandatory first-read gate
+  fails.
+- Left-handed mode changes only its label/class at 390px; measured layout is
+  identical before and after.
+- The two seeded demo sessions contain no strokes and cannot be replayed; the
+  screen simultaneously reports two saved drills and “No saved marks yet.”
+- The claims registry omits the handed-layout behavior, Shift/Escape drawing
+  instructions, and the refund/merchant statement.
 
-Run from `/work/repo`:
+## Other gaps
+
+- First installation shows a false update notice whose button is inert once the
+  worker has activated.
+- Progress JSON can be exported but not imported.
+- Generated-art provenance lacks the required date/licensing detail.
+
+## Re-run
 
 ```sh
 npm ci
@@ -48,67 +53,7 @@ npm audit --audit-level=high
 npm run build
 ```
 
-Results on 2026-08-28 UTC:
-
-- Clean install: 161 packages, 0 vulnerabilities.
-- Lint and TypeScript: pass.
-- Vitest: 1/1 pass.
-- Playwright: 22/22 pass in Chromium 1.58.2.
-- All 16 exact commands in `.factory/claims.json`: pass independently, one
-  selected test each.
-- Production output: JS 24.49 KB raw / 9.24 KB gzip; CSS 9.16 KB raw / 2.77
-  KB gzip; hero WebP 177.28 KB. `dist/index.html` and the Azure Static Web Apps
-  policy are present.
-- Desktop and 390×844 browser coverage: drawing, save/replay, clear/reset,
-  pointer pressure, timer, JSON/PNG export, demo isolation, paid-state changes,
-  200% text, touch targets, and no horizontal overflow pass.
-- Keyboard coverage: skip link, drill selection, canvas drawing, save, and
-  visible focus pass.
-- Accessibility: Playwright axe checks `/`, `/demo`, `/practice`, `/privacy`,
-  `/terms`, and the update notice; no serious or critical violations.
-- PWA: manifest/service-worker registration, landing-only offline navigation to
-  uncached `/practice`, cache update behavior, and separate demo storage pass.
-- Privacy: the complete ordinary demo flow makes same-origin requests only.
-  License requests go only to `https://api.sociobot.in`.
-- Local `verify-url.sh` on `/demo`: HTTP 200, 535ms measured load, zero console
-  errors, `lang=en`, one h1, one main, complete image alternatives and button
-  names.
-- Lighthouse 12.8.2 mobile, with its unstable full-page screenshot collector
-  disabled: Performance 100, Accessibility 100, Best Practices 100, SEO 100;
-  LCP 1.5s, CLS 0, TBT 20ms, Speed Index 0.9s.
-
-## Deployment and live checks
-
-Repair commit `a6ca65e036dd50b2b4f846f5a3b265c79d29688a` was pushed to `main` and its
-`dist/` was uploaded to the existing production Azure Static Web App. No DNS,
-billing, or infrastructure configuration was changed.
-
-Post-deploy checks on 2026-08-28 UTC:
-
-- All 15 public build files byte-match local `dist/`. The live and local
-  `index.html` SHA-256 is
-  `7bd26c68e72b845cdd391522c42a2b3c0353a536297ae5028e0012d927c01e2b`.
-- Live `verify-url.sh` on `/demo`: HTTP 200, 724ms measured load, zero console
-  errors, correct title/language/landmarks/alternatives/button names, plus
-  desktop and 390px screenshots.
-- The checkout endpoint returns HTTP 303 to an HTTPS
-  `checkout.dodopayments.com/session/cks_…` URL.
-- A fresh live invalid returned token receives HTTP 200 with `valid:false`, is
-  removed from the address bar, leaves the note disabled, and leaves both Save
-  note and Print practice week absent without a reload.
-- Live landing axe: zero serious or critical violations. At 390px the document
-  is 390px wide and every tested header, demo, and footer target is at least
-  44px.
-- Fresh live offline test: after visiting only `/`, `/practice` opens with its
-  normal heading while offline. Keyboard drawing focuses the pad and enables
-  Save this drill.
-- `/not-a-real-route` returns HTTP 404. Shell responses are `no-cache`; hashed
-  assets are `max-age=31536000, immutable`; `sw.js` is `no-cache`. CSP,
-  `nosniff`, and strict-origin referrer headers are present.
-- Live Lighthouse 12.8.2 mobile: Performance 100, Accessibility 100, Best
-  Practices 100, SEO 100; LCP 0.9s, CLS 0, TBT 30ms, Speed Index 0.8s.
-
-## Known gaps
-
-None. The pre-existing modified `graphify-out` analysis files are unrelated and
-were intentionally excluded from the repair commits.
+Then run every command in `.factory/claims.json` separately and repeat the live
+390×844 first-read, demo seed/replay, left-handed geometry, initial install,
+genuine service-worker update, offline reload, endpoint rate limit, axe, parity,
+and Lighthouse checks described in `.factory/verification-3.md`.

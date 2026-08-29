@@ -1,50 +1,79 @@
-# Touch Canvas Drills — review 5 handoff
+# Touch Canvas Drills — polish 5 handoff
 
-## Result: FAIL
+## Result: PASS
 
-Adversarial review 5 was completed against source
-`d238a6ed8cd6b231930358e74ce9c54884f497a8` and the live deployment at
-<https://touch-canvas-drills.sociobot.in> on 2026-08-29 UTC. Product code was
-not changed. The full report is `.factory/review-5.md`.
+All findings in reviews 1–5 are closed. The repair code is commit
+`c1eb8758d22820b3fd73b6b41f0fbffe2c124354`, pushed to `main` and deployed to
+<https://touch-canvas-drills.sociobot.in> as Azure Static Web Apps deployment
+`354cab45-5100-4377-868e-e01ad579f577` on 2026-08-29 UTC.
 
-## What was done
+## What changed
 
-- Repeated the cold first-read at 390×844 and 1440×900.
-- Extracted and counted every landing/README copy unit.
-- Exercised the one-click demo with visible sample marks, Reset, Start for
-  real, a real-data sentinel in localStorage and IndexedDB, and a complete
-  request log.
-- Ran all 23 exact `.factory/claims.json` commands separately after `npm ci`
-  in a clean clone.
-- Ran `npm run test:all` in that clone: lint, typecheck, 1 unit test, build,
-  and 35 Playwright tests passed.
-- Rechecked all 24 earlier finding IDs in live behavior and current source.
-- Checked route metadata, a real 404, internal links, history/focus, Axe,
-  offline behavior, visual identity, and missed leverage.
-- Confirmed the live JavaScript SHA-256 equals the clean build artifact.
+- Strengthened all seven incomplete round-5 claim tests. They now prove the
+  actual paid, drill, PNG, progress, free-use, privacy, and demo-isolation
+  outcomes described in `.factory/review-5.md`.
+- Added stable dates, counts, and accessible labels to the seven-day progress
+  cells so date boundaries and visible counts can be verified.
+- Updated every affected `.factory/claims.json` sandbox description to match
+  the real observable test.
+- Kept the one-click `/?demo=1` sample, persistent banner, Reset, Start for
+  real, real/demo storage separation, first-screen copy, routes, titles,
+  metadata, focus behavior, 404, legal links, mobile layout, and cassette-zine
+  visual identity intact.
+- Bumped the product to v1.0.8, PWA cache to `touch-drills-v9`, and manifest
+  start URL to `/?v=6`.
+- Updated the verb-first, 75-character catalog description and refreshed the
+  copy audit. `.factory/polish-5.md` maps every finding ID to its change and
+  evidence.
 
-## Findings left
+## Verification
 
-Seven high-severity claim-proof gaps remain: `paid-extras`, `twenty-drills`,
-`png-export`, `local-progress`, `free-core`, `privacy-local`, and
-`demo-isolation` have passing commands but incomplete assertions. The deployed
-product behavior checked in this round is sound; the registered tests do not
-fully protect the promises from regression.
+From a fresh clone of `c1eb875`:
 
-## How to reproduce
+- `npm ci`: 0 vulnerabilities.
+- `npm run test:all`: lint, TypeScript, 1/1 Vitest test, production build, and
+  35/35 Playwright tests passed.
+- Every one of the 23 exact commands in `.factory/claims.json` ran separately
+  and passed. Full output:
+  `.factory/evidence/polish-5/clean-clone/verification.log`.
+- Production output has `dist/index.html`. Initial JavaScript is 30.57 kB raw /
+  11.20 kB gzip; CSS is 9.60 kB raw / 2.87 kB gzip; hero art is 177.28 kB.
+- Local mobile Lighthouse on `/?demo=1`: 100 performance, 100 accessibility,
+  100 best practices, 100 SEO; LCP 1.1 s, CLS 0, TBT 50 ms.
+
+After deployment:
+
+- The live page references the same `/assets/index-ElHNDllP.js` as the clean
+  build.
+- 33/33 portable browser tests passed against the live origin. This includes
+  every strengthened round-5 claim, all-route Axe, offline, privacy, keyboard,
+  mobile, metadata, focus/history, checkout, and 404 UI checks.
+- `verify-url.sh` passed on `/`, `/?demo=1`, `/privacy`, `/terms`, and
+  `/404.html`: correct title and language, one h1/main, complete image/button
+  labels, and zero console errors. A cold unknown URL returned HTTP 404 with
+  the shared v1.0.8 shell.
+- Live mobile Lighthouse on `/?demo=1`: 100/100/100/100; LCP 1.0 s, CLS 0,
+  TBT 50 ms.
+- Fresh mobile screenshots were inspected for the landing, populated demo,
+  privacy, terms, and 404. The demo shows sample marks before a second action,
+  and the first landing action remains above the fold at 390×844.
+
+## Run and verify
 
 ```sh
 npm ci
 npm run test:all
 npm test -- --grep @claim:<claim-id>
-PLAYWRIGHT_BASE_URL=https://touch-canvas-drills.sociobot.in npx playwright test --grep 'routes set complete metadata|every product route'
+npm run build
+npm run preview
 ```
 
-Open `/?demo=1` at 390×844. The two coral Rail lines marks should be visible
-in the first viewport. Seed both `touch-canvas-drills:data` stores before demo
-entry to verify that Reset and Start for real preserve real work.
+Use `/?demo=1` for the isolated verifier path. Deploy the `dist/` directory as
+a static site using the work-order configuration.
 
-## Repository state
+## Known gaps and next steps
 
-Only `.factory/review-5.md` and this handoff are intended for the review
-commit. Four pre-existing modified `graphify-out` files were left untouched.
+None. No review finding, TODO, stub, or deferred minor item remains. The absent
+`.factory/brief.json` noted by earlier reviews is still absent; scope continues
+to come from the product contract, design thesis, README, demo document, and
+accumulated review history.

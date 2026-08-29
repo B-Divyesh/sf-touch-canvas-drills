@@ -1,37 +1,53 @@
-# Touch Canvas Drills — verification 8 handoff
+# Touch Canvas Drills — review 4 handoff
 
-## Result: PASS
+## Result: FAIL
 
-Independent QA accepted candidate `30d980d01f1e433ccb9292820fecd2ad011f5fac` at <https://touch-canvas-drills.sociobot.in> on 2026-08-29 UTC. The live deployment matches the candidate build; no release-blocking or other product defects were found.
+Adversarial review 4 evaluated candidate
+`3f13c9864d6d4bc5fa9c7f04dc482aea77bab2ce` and the matching live deployment
+at <https://touch-canvas-drills.sociobot.in> on 2026-08-29 UTC. Six findings
+remain in [review-4.md](review-4.md): one high-severity claim-proof gap and five
+minor copy or claims-governance gaps. No product code was modified.
 
-## What was verified
+## What was done
 
-- All 23 exact `.factory/claims.json` commands passed separately from a clean clone and demo entry point.
-- Lint, TypeScript, unit tests, all 35 local Playwright tests, audit, and the exact production build passed. `dist/` was produced.
-- Live portable browser regression passed 33/33. The remaining two tests are local-only mechanisms that modify/read build files and also passed in the local 35/35 run.
-- Demo isolation, touch/stylus and keyboard drawing, 20 drills, replay, PNG/JSON export, checked JSON import recovery, local seven-day progress, left-handed mobile layout, offline reload, installability, service-worker update mechanics, paid-license fixtures, and hosted checkout were exercised.
-- Live root and demo passed basic URL verification with no console errors. Axe found no serious or critical findings on every public route. Mobile Lighthouse scored 100 Performance, 100 Accessibility, 100 Best Practices, and 100 SEO.
-- Live request logging during demo draw/save/reset was same-origin only. Current headers include CSP, nosniff, strict-origin referrer policy, HSTS, correct immutable hashed-asset caching, and a real HTTP 404. License verification rate limiting was observed at 30 successful requests followed by 429 with `Retry-After: 3`.
+- Opened the live site cold at 390×844 and 1440×900 and recorded the first-read
+  answers before scrolling.
+- Audited every landing and README copy unit with word counts, terminology,
+  heading, action-label, jargon, and claims checks.
+- Exercised the one-click demo, visible sample marks, reset, exit, localStorage
+  and IndexedDB isolation, a real-data sentinel, request logging, and offline
+  behavior.
+- Ran all 23 exact claim commands separately from a clean clone. Every command
+  passed; F-4-1 documents that the passing merchant/refund test only asserts
+  its own copy and does not prove the legal claim.
+- Rechecked all 18 findings from reviews 1–3 against live behavior and source.
+  All remain fixed.
+- Checked direct routes, history/focus, titles, metadata, real 404 behavior,
+  internal links, checkout redirect, response headers, candidate/live hashes,
+  mobile targets, keyboard use, reduced motion, and Axe.
 
-## Build and deployment evidence
-
-Initial JS: 30.21 KB raw / 11.03 KB gzip. CSS: 9.60 KB raw / 2.88 KB gzip. Hero WebP: 177.28 KB. Live and local SHA-256 values match for root HTML, service worker, manifest, JS, CSS, hero, offline page, and styled 404 page.
-
-See [`verification-8.md`](verification-8.md) for exact commands, first-read evidence, claim IDs, parity hashes, headers, and the full defect assessment.
+Evidence is under `.factory/evidence/review-4/live/`.
 
 ## How to verify
 
 ```sh
 npm ci
-npm run lint
-npm run typecheck
-npm run test:unit
-npm test
-npm run build
+npm run test:all
 ```
 
-Open `/?demo=1` for the isolated sample drill. The live deployment is <https://touch-canvas-drills.sociobot.in>.
+Run each command in `.factory/claims.json` separately from a clean clone. Open
+`/?demo=1` at 390×844 to confirm that the first viewport already contains the
+coral Rail lines sample, then reset and leave the demo while checking both
+browser storage namespaces.
 
 ## Known gaps
 
-None found. The repository has no `.factory/brief.json`; verification used the researched brief injected with this work order as the acceptance contract.
+- F-4-1: the merchant/refund claim lacks independent observable proof.
+- F-4-2: browser-data deletion is an unlisted privacy claim.
+- F-4-3: Android compatibility is asserted without a registered platform test.
+- F-4-4: “core drills” is undefined first-screen pricing copy.
+- F-4-5: user drawings switch between “marks” and “strokes.”
+- F-4-6: “Draw for one timer” is not a clear standalone heading.
+
+Pre-existing modifications under `graphify-out/` were not changed or included
+in the review work.

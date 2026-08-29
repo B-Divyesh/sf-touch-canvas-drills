@@ -27,6 +27,9 @@ let keyboardDrawing = false;
 let licenseMessage = "";
 let licenseCheckInFlight = false;
 let importMessage = "";
+// A demo always opens on bundled work, not whatever happened to be on the
+// real practice pad before the visitor entered its separate namespace.
+let shouldLoadDemoSample = isDemo();
 const siteOrigin = "https://touch-canvas-drills.sociobot.in";
 
 const metadata = {
@@ -70,6 +73,9 @@ function isAppRoute() {
   return route() === "/practice" || route() === "/demo";
 }
 function nav(path: string) {
+  const target = new URL(path, location.origin);
+  const enteringDemo = target.pathname === "/demo" || target.searchParams.get("demo") === "1";
+  if (enteringDemo && !isDemo()) shouldLoadDemoSample = true;
   history.pushState({}, "", path);
   render();
   window.scrollTo(0, 0);
@@ -99,7 +105,7 @@ function announceRoute() {
   if (announcer && heading) announcer.textContent = heading.textContent || document.title;
 }
 function footer() {
-  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.5</p></footer>`;
+  return `<footer class="footer shell"><p>Touch-drawing practice for phones and tablets.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.6</p></footer>`;
 }
 function header() {
   return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/?demo=1" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
@@ -145,7 +151,8 @@ function savedDrills() {
 function appView() {
   const drill = drills[chosen];
   const left = data.leftHanded ? "left" : "";
-  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved drills</h3>${savedDrills()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this drill?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. All 20 drills and both exports remain free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${licenseMessage || (data.licenseValid ? "Extras are active." : "No active extras license.")}</p><div class="import-controls"><button class="export-data secondary">Export progress JSON</button><button class="import-trigger secondary" type="button">Import progress JSON</button><label class="sr-only" for="progress-import">Choose a progress JSON file</label><input class="progress-import" id="progress-import" type="file" accept="application/json,.json" hidden /></div><p class="import-result" aria-live="polite">${esc(importMessage)}</p></article></section></main>${footer()}`;
+  const replayLabel = isDemo() ? "Replay sample marks" : "Replay marks";
+  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Draw one guided mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>${replayLabel}</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved drills</h3>${savedDrills()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this drill?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. All 20 drills and both exports remain free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${licenseMessage || (data.licenseValid ? "Extras are active." : "No active extras license.")}</p><div class="import-controls"><button class="export-data secondary">Export progress JSON</button><button class="import-trigger secondary" type="button">Import progress JSON</button><label class="sr-only" for="progress-import">Choose a progress JSON file</label><input class="progress-import" id="progress-import" type="file" accept="application/json,.json" hidden /></div><p class="import-result" aria-live="polite">${esc(importMessage)}</p></article></section></main>${footer()}`;
 }
 function legal(kind: "privacy" | "terms") {
   const privacy = kind === "privacy";
@@ -158,6 +165,19 @@ function notFound() {
 function render() {
   if (isDemo()) seedDemo();
   data = loadData();
+  if (isDemo() && shouldLoadDemoSample) {
+    const sample = data.sessions.find((session) => session.id === "sample-1");
+    if (sample) {
+      const index = drills.findIndex((drill) => drill.id === sample.drillId);
+      chosen = index >= 0 ? index : 0;
+      current = structuredClone(sample.strokes);
+      seconds = Math.max(0, drills[chosen].seconds - sample.seconds);
+      recordingStart = 0;
+      keyboardDrawing = false;
+      statusText = "Sample Rail lines marks are ready to replay.";
+    }
+    shouldLoadDemoSample = false;
+  }
   if (route() === "/") app.innerHTML = landing();
   else if (isAppRoute()) app.innerHTML = appView();
   else if (route() === "/privacy" || route() === "/terms")
@@ -196,7 +216,8 @@ function bind() {
   document.querySelector(".reset-demo")?.addEventListener("click", async () => {
     await resetDemo();
     resetPracticeState();
-    statusText = "Demo reset to its sample saved drills.";
+    shouldLoadDemoSample = true;
+    statusText = "Demo reset to its sample Rail lines marks.";
     render();
   });
   document.querySelector(".start-real")?.addEventListener("click", async () => {
@@ -738,6 +759,7 @@ function captureReturnedLicense() {
   }
 }
 window.addEventListener("popstate", () => {
+  if (isDemo()) shouldLoadDemoSample = true;
   render();
   requestAnimationFrame(announceRoute);
 });

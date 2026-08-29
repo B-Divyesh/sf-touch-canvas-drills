@@ -80,7 +80,7 @@ test('routes set complete metadata and history navigation restores heading focus
   await page.goto('/');
   await page.getByRole('link', { name: 'Practice', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
-  await expect(page.locator('#route-updates')).toHaveText('Make one steadier mark');
+  await expect(page.locator('#route-updates')).toHaveText('Draw one guided mark');
   await page.goBack();
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   await expect(page.locator('#route-updates')).toHaveText('Practice touch drawing with short drills');
@@ -113,11 +113,13 @@ test('README and catalog use the reviewed plain wording', async () => {
   expect(readme).toContain('All 20 drills and both exports are free. A $6 one-time Sociobot license adds\nprivate drill notes and a printable seven-day practice sheet.');
   expect(readme).toContain('Open `/?demo=1` to try sample data that\nnever changes your practice.');
   expect(readme).toContain('replays saved drills.');
-  for (const stale of ['validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox']) {
+  expect(readme).toContain('The build opens each page directly, includes a\nstyled 404 page, and applies browser security settings and safe file caching.');
+  expect(readme).toContain('Paid checkout is configured outside this repository. The repository contains\nno credentials.');
+  for (const stale of ['validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox', 'The emitted `staticwebapp.config.json`', 'The factory registers the paid product']) {
     expect(readme).not.toContain(stale);
   }
   const catalog = (await readFile('.factory/catalog-description.txt', 'utf8')).trim();
-  expect(catalog).toMatch(/^Build\b/);
+  expect(catalog).toMatch(/^Practice\b/);
   expect(catalog.length).toBeLessThanOrEqual(120);
 });
 
@@ -137,8 +139,8 @@ test('static 404 has the shared shell, plain recovery copy, and complete metadat
   await expect(page.getByText('PAGE NOT FOUND')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'This page does not exist.' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
-  await expect(page.getByRole('contentinfo')).toContainText('Small touch drills for steadier drawing.');
-  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.5');
+  await expect(page.getByRole('contentinfo')).toContainText('Touch-drawing practice for phones and tablets.');
+  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.6');
   await expect(page.getByRole('link', { name: 'Back to the drills' })).toHaveAttribute('href', '/');
   for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'link[rel="manifest"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
     await expect(page.locator(selector), selector).toHaveCount(1);
@@ -147,7 +149,7 @@ test('static 404 has the shared shell, plain recovery copy, and complete metadat
 
 test('@claim:twenty-drills demo loads all 20 guided drills', async ({ page }) => {
   await page.goto('/?demo=1');
-  await expect(page.getByRole('heading', { name: 'Make one steadier mark' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Draw one guided mark' })).toBeVisible();
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://touch-canvas-drills.sociobot.in/demo');
   await expect(page.locator('[data-drill]')).toHaveCount(20);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
@@ -185,7 +187,7 @@ test('@claim:offline-reload opens practice offline after only the landing visit'
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
   await context.setOffline(true);
   await page.goto('/practice');
-  await expect(page.getByRole('heading', { name: 'Make one steadier mark' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Draw one guided mark' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'You are offline.' })).toHaveCount(0);
 });
 
@@ -204,8 +206,25 @@ test('@claim:pwa-install app shell provides an installable manifest and service 
   expect(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(items => items.length))).toBeGreaterThan(0);
 });
 
-test('@claim:demo-isolation reset reseeds and Start for real removes demo data from both stores', async ({ page }) => {
-  await page.goto('/?demo=1');
+test('@claim:demo-isolation landing demo shows bundled marks, reseeds, and removes both demo records', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await expect(page).toHaveURL(/\?demo=1$/);
+  const canvas = page.locator('canvas');
+  const visibleCanvas = await canvas.boundingBox();
+  expect(visibleCanvas).not.toBeNull();
+  expect(visibleCanvas!.y).toBeLessThan(844);
+  const coralPixels = await canvas.evaluate((element: HTMLCanvasElement) => {
+    const pixels = element.getContext('2d')!.getImageData(0, 0, element.width, element.height).data;
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index] === 189 && pixels[index + 1] === 61 && pixels[index + 2] === 53 && pixels[index + 3] > 0) count++;
+    }
+    return count;
+  });
+  expect(coralPixels).toBeGreaterThan(2_000);
+  await expect(page.getByRole('button', { name: 'Replay sample marks' })).toBeEnabled();
   await expect.poll(async () => demoRecord(page)).not.toBeNull();
   const samples = await page.evaluate(() => JSON.parse(localStorage.getItem('demo:touch-canvas-drills:data') || '{}').sessions as { strokes: unknown[] }[]);
   expect(samples).toHaveLength(2);
@@ -215,6 +234,15 @@ test('@claim:demo-isolation reset reseeds and Start for real removes demo data f
   await expect(page.getByText(/Loaded saved drill: Rail lines|Replay finished/)).toBeVisible();
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay sample marks' })).toBeEnabled();
+  expect(await canvas.evaluate((element: HTMLCanvasElement) => {
+    const pixels = element.getContext('2d')!.getImageData(0, 0, element.width, element.height).data;
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index] === 189 && pixels[index + 1] === 61 && pixels[index + 2] === 53 && pixels[index + 3] > 0) count++;
+    }
+    return count;
+  })).toBeGreaterThan(2_000);
   await drawPointerStroke(page);
   await page.getByRole('button', { name: 'Save this drill' }).click();
   await expect(page.getByText('3 saved drills on this device.')).toBeVisible();
@@ -228,6 +256,7 @@ test('@claim:demo-isolation reset reseeds and Start for real removes demo data f
   expect(await demoRecord(page)).toBeNull();
   await page.goto('/?demo=1');
   await expect.poll(async () => demoRecord(page)).not.toBeNull();
+  await expect(page.getByRole('button', { name: 'Replay sample marks' })).toBeEnabled();
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Privacy' }).click();
   await expect(page).toHaveURL(/\/privacy$/);
   expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
@@ -360,6 +389,24 @@ test('@claim:checkout-redirect live Sociobot checkout redirects to Dodo Live', a
   expect(location.protocol).toBe('https:');
   expect(location.hostname).toBe('checkout.dodopayments.com');
   expect(location.pathname).toMatch(/^\/session\/cks_/);
+});
+
+test('@claim:paid-checkout-setup checkout leaves the product for Sociobot hosted Dodo payment', async ({ page, request }) => {
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Buy the extras' })).toHaveAttribute(
+    'href',
+    'https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout',
+  );
+  const response = await request.get('https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout', { maxRedirects: 0 });
+  expect(response.status()).toBe(303);
+  expect(new URL(response.headers().location).hostname).toBe('checkout.dodopayments.com');
+});
+
+test('@claim:mit-license README links the complete MIT license', async () => {
+  const [readme, license] = await Promise.all([readFile('README.md', 'utf8'), readFile('LICENSE', 'utf8')]);
+  expect(readme).toContain('[LICENSE](LICENSE)');
+  expect(license).toContain('Permission is hereby granted, free of charge, to any person obtaining a copy');
+  expect(license).toContain('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND');
 });
 
 test('@claim:merchant-refunds terms identify Sociobot as merchant of record for refunds', async ({ page }) => {
@@ -537,7 +584,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
     });
     await page.reload();
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await writeFile(workerPath, original.replace("touch-drills-v6", "touch-drills-v6-regression"));
+    await writeFile(workerPath, original.replace("touch-drills-v7", "touch-drills-v7-regression"));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
     await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
     await Promise.all([
@@ -545,7 +592,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
       page.getByRole('button', { name: 'Update app' }).click(),
     ]);
     await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v6-regression');
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v7-regression');
   } finally {
     await writeFile(workerPath, original);
   }

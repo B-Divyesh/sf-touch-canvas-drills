@@ -42,7 +42,7 @@ Word counts treat a hyphenated term, number, or path as one word.
 | The 20 drills, progress, and image export stay free. | 9 | Pass |
 | Buy the extras | 3 | Pass |
 | Read purchase terms | 3 | Pass |
-| Small touch drills for steadier drawing. | 6 | Pass |
+| Touch-drawing practice for phones and tablets. | 6 | Pass |
 
 ## README
 
@@ -66,8 +66,8 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Use `npm run preview` to view that build. | 8 | Pass |
 | Open `/?demo=1` to try sample data that never changes your practice. | 11 | Pass |
 | Deploy `dist/` as a static app. | 5 | Pass |
-| The emitted `staticwebapp.config.json` adds explicit app routes, a styled 404 response, security headers, and immutable caching for hashed assets. | 19 | Pass |
-| The factory registers the paid product. | 6 | Pass |
+| The build opens each page directly, includes a styled 404 page, and applies browser security settings and safe file caching. | 18 | Pass |
+| Paid checkout is configured outside this repository. | 7 | Pass |
 | No credentials are stored in this repository. | 7 | Pass |
 | Read the in-app privacy page and terms. | 7 | Pass |
 | This project is licensed under MIT; see LICENSE. | 8 | Pass |

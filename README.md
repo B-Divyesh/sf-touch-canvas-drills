@@ -33,10 +33,10 @@ never changes your practice.
 
 ## Deployment
 
-Deploy `dist/` as a static app. The emitted `staticwebapp.config.json` adds
-explicit app routes, a styled 404 response, security headers, and immutable
-caching for hashed assets. The factory registers the paid product; no
-credentials are stored in this repository.
+Deploy `dist/` as a static app. The build opens each page directly, includes a
+styled 404 page, and applies browser security settings and safe file caching.
+Paid checkout is configured outside this repository. The repository contains
+no credentials.
 
 ## Privacy and terms
 

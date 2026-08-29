@@ -16,6 +16,7 @@
       "src_main_exportpng",
       "src_main_keyboardcursor",
       "src_main_keyboarddraw",
+      "src_main_metadata",
       "src_main_move",
       "src_main_position",
       "src_main_replay",
@@ -69,6 +70,24 @@
       "vitest"
     ],
     "3": [
+      "src_main_announceroute",
+      "src_main_bind",
+      "src_main_capturereturnedlicense",
+      "src_main_importdata",
+      "src_main_isapproute",
+      "src_main_nav",
+      "src_main_render",
+      "src_main_route",
+      "src_main_savesession",
+      "src_main_setmeta",
+      "src_main_updatemetadata",
+      "src_main_verifylicense",
+      "src_main_verifystoredlicense",
+      "src_storage_isdemo",
+      "src_storage_loaddata",
+      "src_storage_savedata"
+    ],
+    "4": [
       "package",
       "package_name",
       "package_private",
@@ -84,7 +103,7 @@
       "package_type",
       "package_version"
     ],
-    "4": [
+    "5": [
       "src_storage",
       "src_storage_appdata",
       "src_storage_cleardemodata",
@@ -99,21 +118,6 @@
       "src_storage_session",
       "src_storage_stroke",
       "src_storage_withpracticestore"
-    ],
-    "5": [
-      "src_main_bind",
-      "src_main_capturereturnedlicense",
-      "src_main_importdata",
-      "src_main_isapproute",
-      "src_main_nav",
-      "src_main_render",
-      "src_main_route",
-      "src_main_savesession",
-      "src_main_verifylicense",
-      "src_main_verifystoredlicense",
-      "src_storage_isdemo",
-      "src_storage_loaddata",
-      "src_storage_savedata"
     ],
     "6": [
       "src_main_appview",
@@ -160,12 +164,12 @@
     ]
   },
   "cohesion": {
-    "0": 0.20948616600790515,
+    "0": 0.1956521739130435,
     "1": 0.1,
     "2": 0.10526315789473684,
-    "3": 0.14285714285714285,
-    "4": 0.21978021978021978,
-    "5": 0.358974358974359,
+    "3": 0.2833333333333333,
+    "4": 0.14285714285714285,
+    "5": 0.21978021978021978,
     "6": 0.28888888888888886,
     "7": 0.3333333333333333,
     "8": 0.5,
@@ -178,12 +182,17 @@
     {
       "id": "src_main_bind",
       "label": "bind()",
-      "degree": 19
+      "degree": 20
     },
     {
       "id": "src_main_render",
       "label": "render()",
-      "degree": 17
+      "degree": 18
+    },
+    {
+      "id": "src_storage_isdemo",
+      "label": "isDemo()",
+      "degree": 12
     },
     {
       "id": "src_storage_savedata",
@@ -196,13 +205,8 @@
       "degree": 11
     },
     {
-      "id": "src_storage_isdemo",
-      "label": "isDemo()",
-      "degree": 10
-    },
-    {
-      "id": "src_main_drawnow",
-      "label": "drawNow()",
+      "id": "package_scripts",
+      "label": "scripts",
       "degree": 9
     },
     {
@@ -211,8 +215,8 @@
       "degree": 9
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
+      "id": "src_main_drawnow",
+      "label": "drawNow()",
       "degree": 9
     },
     {
@@ -221,8 +225,8 @@
       "degree": 8
     },
     {
-      "id": "src_main_keyboarddraw",
-      "label": "keyboardDraw()",
+      "id": "src_main_setupcanvas",
+      "label": "setupCanvas()",
       "degree": 7
     }
   ],

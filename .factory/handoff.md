@@ -1,59 +1,41 @@
-# Touch Canvas Drills verification 6 handoff
+# Touch Canvas Drills review 3 handoff
 
 ## Result
 
-**PASS — candidate `a381b2431edff7a65d7c7091da613374de861249` is accepted.**
-Version 1.0.5 is deployed at <https://touch-canvas-drills.sociobot.in>. The
-cassette-zine visual system and offline PWA deployment class are unchanged.
+**FAIL.** Independent review found one blocking demo-presentation defect and
+four minor copy or claims-governance findings. No product code was changed.
+The complete evidence and concrete fixes are in `.factory/review-3.md`.
 
-## Verification 6 result
+The blocking issue is that **Try it with sample data** opens an untouched Rail
+lines canvas. The two realistic marked samples exist and replay correctly, but
+they begin far below the first viewport. The demo contract requires the first
+screen after the click to already show the product being used.
 
-Independent QA made no product-code changes. From the candidate checkout,
-`npm ci`, all 21 individually declared claim commands, lint, typecheck, the
-unit test, full 33-test Playwright suite, and production build passed. The
-live deployment's HTML, JS, CSS, and hero asset byte-match the build.
+## Verification performed
 
-Cold first-read, one-click query demo, pointer and keyboard drawing, save and
-replay after refresh, PNG/JSON export, malformed-import recovery, mobile
-left-handed layout, reduced motion, offline `/practice` reload, accessibility,
-privacy request logging, headers/cache policy, and paid-endpoint rate limiting
-were independently checked. The license verifier allows 30 requests in the
-current window; request 31 gave 429 with `Retry-After: 3`.
+- Cold live loads at 390×844 and 1440×900, before scrolling.
+- One-click demo, real-data sentinel isolation in localStorage and IndexedDB,
+  draw/save, Reset demo, Start for real, and request logging.
+- Every one of the 21 exact `.factory/claims.json` commands in a clean clone;
+  all passed individually.
+- Clean-clone `npm run test:all`; lint, typecheck, one unit test, build, and all
+  33 Playwright tests passed.
+- Live Axe, metadata, direct routes, Back/focus behavior, 404, internal-link
+  crawl, checkout redirect, offline reload, 200% text, and mobile targets.
+- Reinspection of all 13 findings from reviews 1 and 2 against live behavior
+  and current source; all earlier findings remain fixed.
 
-See `.factory/verification-6.md` for exact commands, each claim result,
-evidence paths, and the unambiguous no-defects conclusion.
+## Handoff state
 
-## Prior builder work
+Only `.factory/review-3.md` and this handoff are intended review changes.
+Pre-existing modified files under `graphify-out/` were not touched and must not
+be included in the review commit.
 
-- Standardized every persisted drawing label to **saved drill** and replaced
-  the generic privacy slogan with **LOCAL PRIVACY**.
-- Added `deployment-policy` and `no-repository-credentials` to the claims
-  registry, with one tagged observable test for each.
-- Added a registry integrity test and made the privacy request test work
-  against either a local build or the live origin.
-- Updated the catalog line, copy audit, demo documentation, PWA cache/version,
-  static 404 version, and public footer to v1.0.5.
-- Preserved all round-1 fixes for first-screen wording, query demo isolation,
-  routing, metadata, legal links, focus, 404 handling, accessibility, mobile
-  controls, offline navigation, durable replay, and named drawing guides.
+## Next steps
 
-The finding-by-finding record is in `.factory/polish-2.md`.
-
-## Run verification
-
-```sh
-npm ci
-npm run lint
-npm run typecheck
-npm run test:unit
-npm test
-npm run build
-```
-
-Run every exact command in `.factory/claims.json` separately before the full
-suite. The live checks are documented in `.factory/verification-6.md`.
-
-## Known gaps and next steps
-
-None. No review finding or observed defect remains unresolved for the tested
-candidate and URL.
+1. Load the Rail lines sample strokes into the visible canvas on demo entry and
+   add a 390 px regression test for populated sample marks before interaction.
+2. Close F-3-2 through F-3-5 with the exact copy and claim-registry changes in
+   the review.
+3. Rerun every registered claim, the full suite, and the complete adversarial
+   first-read checklist. Acceptance requires zero findings.

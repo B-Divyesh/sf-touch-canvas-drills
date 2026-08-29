@@ -1,6 +1,6 @@
 # Touch Canvas Drills
 
-Practice touch drawing with short drills. It is for Android phones and tablets.
+Practice touch drawing with short drills. It is for people who draw on phones and tablets.
 It can be installed as a standalone web app. It works offline after the first
 visit.
 

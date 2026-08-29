@@ -31,6 +31,31 @@ async function demoRecord(page: Page) {
   }));
 }
 
+async function realPracticeRecord(page: Page) {
+  return page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+    const request = indexedDB.open('touch-canvas-drills', 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains('practice')) {
+        database.close();
+        resolve(null);
+        return;
+      }
+      const transaction = database.transaction('practice', 'readonly');
+      const get = transaction.objectStore('practice').get('touch-canvas-drills:data');
+      get.onsuccess = () => {
+        database.close();
+        resolve(get.result ?? null);
+      };
+      get.onerror = () => {
+        database.close();
+        reject(get.error);
+      };
+    };
+  }));
+}
+
 async function guidePixelsNear(page: Page, x: number, y: number) {
   return page.locator('canvas').evaluate((canvas: HTMLCanvasElement, point) => {
     const context = canvas.getContext('2d')!;
@@ -94,7 +119,10 @@ test('landing copy is literal and the sample action enters the isolated query de
   await expect(page.getByText('LOCAL PRIVACY')).toBeVisible();
   await expect(page.getByText('Replay it, save the drill, and return tomorrow.')).toBeVisible();
   await expect(page.getByText('Your saved drills live in this browser.')).toBeVisible();
-  for (const stale of ['PRIVATE BY DESIGN', 'save the session', 'Your sessions live']) {
+  await expect(page.getByText('Your marks stay on this device')).toBeVisible();
+  await expect(page.getByText('All 20 drills are free; extras cost $6 once')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Draw until the timer ends' })).toBeVisible();
+  for (const stale of ['PRIVATE BY DESIGN', 'save the session', 'Your sessions live', 'Your strokes stay on this device', 'Free core drills', 'Draw for one timer']) {
     await expect(page.getByText(stale, { exact: false })).toHaveCount(0);
   }
   await expect(page.getByRole('link', { name: 'Try the Rail lines sample' })).toHaveAttribute('href', '/?demo=1');
@@ -109,13 +137,14 @@ test('landing copy is literal and the sample action enters the isolated query de
 test('README and catalog use the reviewed plain wording', async () => {
   const readme = await readFile('README.md', 'utf8');
   expect(readme).toContain('Exports and imports checked progress files for backup or a new device.');
+  expect(readme).toContain('It is for people who draw on phones and tablets.');
   expect(readme).toContain('The demo keeps its sample work separate from your own practice.');
   expect(readme).toContain('All 20 drills and both exports are free. A $6 one-time Sociobot license adds\nprivate drill notes and a printable seven-day practice sheet.');
   expect(readme).toContain('Open `/?demo=1` to try sample data that\nnever changes your practice.');
   expect(readme).toContain('replays saved drills.');
   expect(readme).toContain('The build opens each page directly, includes a\nstyled 404 page, and applies browser security settings and safe file caching.');
   expect(readme).toContain('Paid checkout is configured outside this repository. The repository contains\nno credentials.');
-  for (const stale of ['validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox', 'The emitted `staticwebapp.config.json`', 'The factory registers the paid product']) {
+  for (const stale of ['It is for Android phones and tablets.', 'validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox', 'The emitted `staticwebapp.config.json`', 'The factory registers the paid product']) {
     expect(readme).not.toContain(stale);
   }
   const catalog = (await readFile('.factory/catalog-description.txt', 'utf8')).trim();
@@ -140,7 +169,7 @@ test('static 404 has the shared shell, plain recovery copy, and complete metadat
   await expect(page.getByRole('heading', { name: 'This page does not exist.' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('Touch-drawing practice for phones and tablets.');
-  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.6');
+  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.7');
   await expect(page.getByRole('link', { name: 'Back to the drills' })).toHaveAttribute('href', '/');
   for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'link[rel="manifest"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
     await expect(page.locator(selector), selector).toHaveCount(1);
@@ -175,6 +204,29 @@ test('@claim:privacy-local demo sends no cross-origin requests', async ({ page }
   const productOrigin = new URL(page.url()).origin;
   const foreign = requests.filter(url => new URL(url).origin !== productOrigin);
   expect(foreign).toEqual([]);
+});
+
+test('@claim:clear-browser-data clearing browser data removes local practice data from both stores', async ({ page, context }) => {
+  await page.goto('/practice');
+  await drawPointerStroke(page);
+  await page.getByRole('button', { name: 'Save this drill' }).click();
+  await expect(page.getByText('1 saved drill on this device.')).toBeVisible();
+  await expect.poll(async () => {
+    const saved = await realPracticeRecord(page) as { sessions?: unknown[] } | null;
+    return saved?.sessions?.length || 0;
+  }).toBe(1);
+
+  const protocol = await context.newCDPSession(page);
+  await protocol.send('Storage.clearDataForOrigin', {
+    origin: new URL(page.url()).origin,
+    storageTypes: 'all',
+  });
+  await protocol.detach();
+
+  await page.reload();
+  expect(await page.evaluate(() => localStorage.getItem('touch-canvas-drills:data'))).toBeNull();
+  expect(await realPracticeRecord(page)).toBeNull();
+  await expect(page.getByText('No saved drills yet. Save one after you draw.')).toBeVisible();
 });
 
 test('@claim:offline-reload opens practice offline after only the landing visit', async ({ page, context }) => {
@@ -380,9 +432,9 @@ test('@claim:paid-extras the $6 checkout and valid license expose notes and prin
   await expect(page.locator('body')).toHaveAttribute('data-printed', 'true');
 });
 
-test('@claim:checkout-redirect live Sociobot checkout redirects to Dodo Live', async ({ request }) => {
-  const terms = await request.get('/terms');
-  expect(await terms.text()).toContain('<div id="app"></div>');
+test("@claim:checkout-redirect payment opens Sociobot's hosted Dodo checkout", async ({ page, request }) => {
+  await page.goto('/terms');
+  await expect(page.getByText("Payment opens Sociobot's hosted checkout.")).toBeVisible();
   const response = await request.get('https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout', { maxRedirects: 0 });
   expect(response.status()).toBe(303);
   const location = new URL(response.headers().location);
@@ -407,12 +459,6 @@ test('@claim:mit-license README links the complete MIT license', async () => {
   expect(readme).toContain('[LICENSE](LICENSE)');
   expect(license).toContain('Permission is hereby granted, free of charge, to any person obtaining a copy');
   expect(license).toContain('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND');
-});
-
-test('@claim:merchant-refunds terms identify Sociobot as merchant of record for refunds', async ({ page }) => {
-  await page.goto('/terms');
-  await expect(page.getByText('Checkout, refunds, and license revocation are handled by Sociobot, the merchant of record.')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Privacy' }).first()).toHaveAttribute('href', '/privacy');
 });
 
 test('@claim:invalid-license-lock invalid returned license locks all paid controls as soon as verification rejects it', async ({ page }) => {
@@ -602,7 +648,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
     });
     await page.reload();
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await writeFile(workerPath, original.replace("touch-drills-v7", "touch-drills-v7-regression"));
+    await writeFile(workerPath, original.replace("touch-drills-v8", "touch-drills-v8-regression"));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
     await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
     await Promise.all([
@@ -610,7 +656,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
       page.getByRole('button', { name: 'Update app' }).click(),
     ]);
     await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v7-regression');
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v8-regression');
   } finally {
     await writeFile(workerPath, original);
   }

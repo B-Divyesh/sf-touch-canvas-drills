@@ -13,8 +13,8 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Starts a ready-to-draw sample drill. | 5 | Pass |
 | Start a blank practice | 4 | Pass |
 | Works offline after the first visit | 6 | Pass |
-| Your strokes stay on this device | 6 | Pass |
-| Free core drills; $6 one-time extras | 6 | Pass |
+| Your marks stay on this device | 6 | Pass |
+| All 20 drills are free; extras cost $6 once | 10 | Pass |
 | NEXT UP / 00:20 | 3 | Pass |
 | Rail lines | 2 | Pass |
 | Follow a faint guide. | 4 | Pass |
@@ -25,7 +25,7 @@ Word counts treat a hyphenated term, number, or path as one word.
 | How the drills work | 4 | Pass |
 | Pick a drill | 3 | Pass |
 | Choose lines, curves, or simple shapes. | 6 | Pass |
-| Draw for one timer | 4 | Pass |
+| Draw until the timer ends | 5 | Pass |
 | Use a finger or a stylus. | 6 | Pass |
 | Pressure does not matter. | 4 | Pass |
 | Review your mark | 3 | Pass |
@@ -49,7 +49,7 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Copy unit | Words | Result |
 | --- | ---: | --- |
 | Practice touch drawing with short drills. | 6 | Pass |
-| It is for Android phones and tablets. | 7 | Pass |
+| It is for people who draw on phones and tablets. | 10 | Pass |
 | It can be installed as a standalone web app. | 9 | Pass |
 | It works offline after the first visit. | 7 | Pass |
 | Gives 20 timed line, curve, and shape drills. | 8 | Pass |
@@ -68,14 +68,15 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Deploy `dist/` as a static app. | 5 | Pass |
 | The build opens each page directly, includes a styled 404 page, and applies browser security settings and safe file caching. | 18 | Pass |
 | Paid checkout is configured outside this repository. | 7 | Pass |
-| No credentials are stored in this repository. | 7 | Pass |
+| The repository contains no credentials. | 5 | Pass |
 | Read the in-app privacy page and terms. | 7 | Pass |
 | This project is licensed under MIT; see LICENSE. | 8 | Pass |
 
 No sentence exceeds 22 words and no banned term appears. Read aloud, the first
 screen states the job, audience, first action, and result in one breath.
 
-Terminology: drill → a timed guided exercise or one persisted drawing; marks
-→ the lines the user draws; demo → sample data in a separate storage namespace;
+Terminology: drill → a timed guided exercise or one persisted drawing; mark
+→ a line the user draws; demo → sample data in a separate storage namespace;
 practice sheet → the printable seven-day paid extra; extras → the optional paid
-notes and practice sheet.
+notes and practice sheet. Storage code may use “stroke,” but visitor-facing copy
+uses “mark.”

@@ -24,7 +24,8 @@ The finding-by-finding record is in `.factory/polish-2.md`.
 
 ## Exact verification
 
-From a clean clone of repair commit `c7b56c9`:
+From a clean clone of evidence commit `e8f6e7f` (the following handoff-only
+commit records that result):
 
 ```sh
 npm ci

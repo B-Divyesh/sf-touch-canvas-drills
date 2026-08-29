@@ -294,6 +294,12 @@ h3 {
 .pricing a:not(.button) {
   color: var(--ink);
 }
+.pricing a[href="/terms"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
 .price {
   font:
     900 2.5rem ui-monospace,

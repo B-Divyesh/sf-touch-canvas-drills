@@ -542,18 +542,36 @@ test('triangle, diamond, and leaf drills render their named guides', async ({ pa
   expect(await guidePixelsNear(page, 792, 338)).toBeGreaterThan(0);
 });
 
-test('390px navigation, demo, and footer touch targets are at least 44px', async ({ page }) => {
+test('every visible interactive target is at least 44px on desktop and 390px mobile', async ({ page }) => {
+  const routes = ['/', '/?demo=1', '/demo', '/practice', '/privacy', '/terms', '/404.html'];
+  const viewports = [
+    { name: 'desktop', width: 1440, height: 900 },
+    { name: 'mobile', width: 390, height: 844 },
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    for (const route of routes) {
+      await page.goto(route);
+      const undersized = await page
+        .locator('a[href], button, input:not([type="hidden"]), textarea, select, [role="button"], [tabindex]:not([tabindex="-1"])')
+        .evaluateAll(elements => elements
+          .filter(element => {
+            const style = getComputedStyle(element);
+            return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+          })
+          .map(element => {
+            const box = element.getBoundingClientRect();
+            const label = element.getAttribute('aria-label') || element.textContent?.trim() || element.getAttribute('name') || element.id || element.tagName;
+            return { label, width: box.width, height: box.height };
+          })
+          .filter(target => target.width < 44 || target.height < 44));
+      expect(undersized, `${viewport.name} ${route} interactive targets smaller than 44px`).toEqual([]);
+    }
+  }
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo');
-  const sizes = await page.locator('.topbar a, .demo-bar button, .footer a').evaluateAll(elements => elements.map(element => {
-    const box = element.getBoundingClientRect();
-    return { label: element.textContent?.trim(), width: box.width, height: box.height };
-  }));
-  expect(sizes.length).toBeGreaterThan(0);
-  for (const size of sizes) {
-    expect.soft(size.width, `${size.label} width`).toBeGreaterThanOrEqual(44);
-    expect.soft(size.height, `${size.label} height`).toBeGreaterThanOrEqual(44);
-  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);

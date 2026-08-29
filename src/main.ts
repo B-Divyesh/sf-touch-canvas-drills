@@ -105,7 +105,7 @@ function announceRoute() {
   if (announcer && heading) announcer.textContent = heading.textContent || document.title;
 }
 function footer() {
-  return `<footer class="footer shell"><p>Touch-drawing practice for phones and tablets.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.7</p></footer>`;
+  return `<footer class="footer shell"><p>Touch-drawing practice for phones and tablets.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.8</p></footer>`;
 }
 function header() {
   return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/?demo=1" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
@@ -128,8 +128,19 @@ function days() {
     const count = data.sessions.filter(
       (s) => new Date(s.date).toDateString() === d.toDateString(),
     ).length;
+    const dateKey = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0"),
+    ].join("-");
+    const dateLabel = d.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+    const activityLabel = `${count} saved drill${count === 1 ? "" : "s"}`;
     out.push(
-      `<div class="day ${count ? "done" : ""}"><span>${d.toLocaleDateString(undefined, { weekday: "narrow" })}</span><br>${d.getDate()}${count ? `<br>● ${count}` : ""}</div>`,
+      `<div class="day ${count ? "done" : ""}" data-date="${dateKey}" data-count="${count}" aria-label="${dateLabel}: ${activityLabel}"><span aria-hidden="true">${d.toLocaleDateString(undefined, { weekday: "narrow" })}</span><br aria-hidden="true">${d.getDate()}${count ? `<br aria-hidden="true">● ${count}` : ""}</div>`,
     );
   }
   return out.join("");

@@ -4,6 +4,29 @@ import { execFileSync } from 'node:child_process';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
+const expectedDrills = [
+  { title: 'Rail lines', kind: 'line', cue: 'Keep one steady lane.', seconds: 20 },
+  { title: 'Ladder rungs', kind: 'line', cue: 'Cross each rail without rushing.', seconds: 20 },
+  { title: 'Corner turns', kind: 'line', cue: 'Stop at each corner, then turn.', seconds: 25 },
+  { title: 'Long pulls', kind: 'line', cue: 'Pull from shoulder to fingertip.', seconds: 20 },
+  { title: 'Short dashes', kind: 'line', cue: 'Lift cleanly between marks.', seconds: 20 },
+  { title: 'Fan out', kind: 'line', cue: 'Start every line from the same point.', seconds: 25 },
+  { title: 'S curves', kind: 'curve', cue: 'Let the curve change direction once.', seconds: 25 },
+  { title: 'C curves', kind: 'curve', cue: 'Match the open side.', seconds: 20 },
+  { title: 'Wave train', kind: 'curve', cue: 'Keep the crests even.', seconds: 25 },
+  { title: 'Spiral in', kind: 'curve', cue: 'Tighten slowly toward the center.', seconds: 30 },
+  { title: 'Arc stack', kind: 'curve', cue: 'Nest each arc inside the last.', seconds: 25 },
+  { title: 'Loop chain', kind: 'curve', cue: 'Meet each loop at one point.', seconds: 25 },
+  { title: 'Square loop', kind: 'shape', cue: 'Trace the corners with one pause.', seconds: 20 },
+  { title: 'Circle stack', kind: 'shape', cue: 'Close each circle without a bump.', seconds: 25 },
+  { title: 'Triangle trio', kind: 'shape', cue: 'Aim each point at the guide.', seconds: 20 },
+  { title: 'Oval orbit', kind: 'shape', cue: 'Keep the oval breathing evenly.', seconds: 25 },
+  { title: 'Diamond grid', kind: 'shape', cue: 'Cross through the same corners.', seconds: 25 },
+  { title: 'Box turn', kind: 'shape', cue: 'Keep opposite sides parallel.', seconds: 20 },
+  { title: 'Leaf pair', kind: 'shape', cue: 'Meet the tips, then lift.', seconds: 20 },
+  { title: 'Target rings', kind: 'shape', cue: 'Keep each ring centered.', seconds: 30 },
+] as const;
+
 async function drawPointerStroke(page: Page) {
   const canvas = page.locator('canvas');
   const box = await canvas.boundingBox();
@@ -12,6 +35,96 @@ async function drawPointerStroke(page: Page) {
   await page.mouse.down();
   await page.mouse.move(box.x + 220, box.y + 150, { steps: 5 });
   await page.mouse.up();
+}
+
+async function drawSyntheticStroke(page: Page) {
+  await page.locator('canvas').evaluate((canvas: HTMLCanvasElement) => {
+    canvas.setPointerCapture = () => undefined;
+    const rect = canvas.getBoundingClientRect();
+    const fire = (type: string, x: number, y: number) => canvas.dispatchEvent(new PointerEvent(type, {
+      bubbles: true,
+      pointerId: 41,
+      pointerType: 'pen',
+      pressure: 0.5,
+      clientX: rect.left + rect.width * x,
+      clientY: rect.top + rect.height * y,
+    }));
+    fire('pointerdown', 0.2, 0.25);
+    fire('pointermove', 0.45, 0.5);
+    fire('pointerup', 0.45, 0.5);
+  });
+}
+
+async function canvasColorPixels(page: Page, color: [number, number, number]) {
+  return page.locator('canvas').evaluate((canvas: HTMLCanvasElement, expected) => {
+    const pixels = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (
+        Math.abs(pixels[index] - expected[0]) < 12 &&
+        Math.abs(pixels[index + 1] - expected[1]) < 12 &&
+        Math.abs(pixels[index + 2] - expected[2]) < 12 &&
+        pixels[index + 3] > 0
+      ) count++;
+    }
+    return count;
+  }, color);
+}
+
+async function inspectPng(page: Page, path: string) {
+  const bytes = await readFile(path);
+  expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+  return page.evaluate(async encoded => {
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+    const image = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+    const output = new OffscreenCanvas(image.width, image.height);
+    const context = output.getContext('2d')!;
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, image.width, image.height).data;
+    let coralPixels = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index] === 189 && pixels[index + 1] === 61 && pixels[index + 2] === 53 && pixels[index + 3] > 0) coralPixels++;
+    }
+    image.close();
+    return { width: output.width, height: output.height, coralPixels };
+  }, bytes.toString('base64'));
+}
+
+type PracticeRecord = {
+  sessions: { id: string; drillId: string; date: string; seconds: number; strokes: { color: string; width: number; points: { x: number; y: number; t: number }[] }[] }[];
+  leftHanded: boolean;
+  notes: Record<string, string>;
+};
+
+async function writeRealPracticeRecord(page: Page, record: PracticeRecord) {
+  return page.evaluate(async value => {
+    const serialized = JSON.stringify(value);
+    localStorage.setItem('touch-canvas-drills:data', serialized);
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('touch-canvas-drills', 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains('practice')) request.result.createObjectStore('practice');
+      };
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const database = request.result;
+        const transaction = database.transaction('practice', 'readwrite');
+        transaction.objectStore('practice').put(value, 'touch-canvas-drills:data');
+        transaction.oncomplete = () => {
+          database.close();
+          resolve();
+        };
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+    return serialized;
+  }, record);
+}
+
+async function expectRealPracticeRecord(page: Page, serialized: string, record: PracticeRecord) {
+  expect(await page.evaluate(() => localStorage.getItem('touch-canvas-drills:data'))).toBe(serialized);
+  expect(await realPracticeRecord(page)).toEqual(record);
 }
 
 async function demoRecord(page: Page) {
@@ -169,41 +282,79 @@ test('static 404 has the shared shell, plain recovery copy, and complete metadat
   await expect(page.getByRole('heading', { name: 'This page does not exist.' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('Touch-drawing practice for phones and tablets.');
-  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.7');
+  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.8');
   await expect(page.getByRole('link', { name: 'Back to the drills' })).toHaveAttribute('href', '/');
   for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'link[rel="manifest"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
     await expect(page.locator(selector), selector).toHaveCount(1);
   }
 });
 
-test('@claim:twenty-drills demo loads all 20 guided drills', async ({ page }) => {
+test('@claim:twenty-drills all 20 guided drills load their own working exercise', async ({ page }) => {
   await page.goto('/?demo=1');
   await expect(page.getByRole('heading', { name: 'Draw one guided mark' })).toBeVisible();
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://touch-canvas-drills.sociobot.in/demo');
   await expect(page.locator('[data-drill]')).toHaveCount(20);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
+
+  expect(new Set(expectedDrills.map(drill => drill.kind))).toEqual(new Set(['line', 'curve', 'shape']));
+  for (const [index, drill] of expectedDrills.entries()) {
+    await page.locator('[data-drill]').nth(index).click();
+    await expect(page.locator('#drill-title')).toHaveText(drill.title);
+    await expect(page.locator('.cue')).toHaveText(drill.cue);
+    await expect(page.getByLabel('Seconds remaining')).toHaveText(`00:${drill.seconds}`);
+    await expect(page.locator('.deck .tape-label')).toHaveText(`${drill.kind} / TIMER RUNS ON FIRST MARK`);
+    await expect(page.getByRole('application', { name: `Drawing area for ${drill.title}` })).toBeVisible();
+    expect(await canvasColorPixels(page, [139, 181, 201]), `${drill.title} guide pixels`).toBeGreaterThan(25);
+    await drawSyntheticStroke(page);
+    expect(await canvasColorPixels(page, [189, 61, 53]), `${drill.title} accepted mark pixels`).toBeGreaterThan(25);
+    await expect(page.getByRole('button', { name: 'Save this drill' })).toBeEnabled();
+  }
 });
 
-test('@claim:png-export exports one drill image', async ({ page }) => {
+test('@claim:png-export exports a decodable 900 by 675 PNG containing the drawn mark', async ({ page }, testInfo) => {
   await page.goto('/demo');
-  await drawPointerStroke(page);
+  await page.getByRole('button', { name: 'Clear marks' }).click();
+  await drawSyntheticStroke(page);
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export PNG' }).click();
   const file = await download;
   expect(file.suggestedFilename()).toBe('rail-lines.png');
-  expect((await file.createReadStream())?.readable).toBeTruthy();
+  const target = testInfo.outputPath('rail-lines.png');
+  await file.saveAs(target);
+  const decoded = await inspectPng(page, target);
+  expect(decoded.width).toBe(900);
+  expect(decoded.height).toBe(675);
+  expect(decoded.coralPixels).toBeGreaterThan(100);
 });
 
-test('@claim:privacy-local demo sends no cross-origin requests', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', request => requests.push(request.url()));
+test('@claim:privacy-local full demo flow sends no artwork or analytics request to any origin', async ({ page }) => {
+  const requests: { url: string; method: string; resourceType: string; body: string | null }[] = [];
+  page.on('request', request => requests.push({
+    url: request.url(),
+    method: request.method(),
+    resourceType: request.resourceType(),
+    body: request.postData(),
+  }));
   await page.goto('/demo');
-  await drawPointerStroke(page);
+  await page.getByRole('button', { name: 'Clear marks' }).click();
+  await drawSyntheticStroke(page);
   await page.getByRole('button', { name: 'Save this drill' }).click();
+  const pngDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export PNG' }).click();
+  await pngDownload;
+  const jsonDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export progress JSON' }).click();
+  await jsonDownload;
   await page.getByRole('button', { name: 'Reset demo' }).click();
   const productOrigin = new URL(page.url()).origin;
-  const foreign = requests.filter(url => new URL(url).origin !== productOrigin);
+  const foreign = requests.filter(request => new URL(request.url).origin !== productOrigin);
   expect(foreign).toEqual([]);
+  expect(requests.length).toBeGreaterThan(0);
+  expect(requests.every(request => ['GET', 'HEAD'].includes(request.method))).toBe(true);
+  expect(requests.filter(request => request.body !== null)).toEqual([]);
+  expect(requests.some(request => request.resourceType === 'script')).toBe(true);
+  expect(JSON.stringify(requests)).not.toContain('"points"');
+  expect(JSON.stringify(requests)).not.toContain('#bd3d35');
 });
 
 test('@claim:clear-browser-data clearing browser data removes local practice data from both stores', async ({ page, context }) => {
@@ -258,11 +409,25 @@ test('@claim:pwa-install app shell provides an installable manifest and service 
   expect(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(items => items.length))).toBeGreaterThan(0);
 });
 
-test('@claim:demo-isolation landing demo shows bundled marks, reseeds, and removes both demo records', async ({ page }) => {
+test('@claim:demo-isolation demo preserves an existing real record through entry, work, reset, navigation, and exit', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  const realSentinel: PracticeRecord = {
+    sessions: [{
+      id: 'real-sentinel-drill',
+      drillId: 'leaf-pair',
+      date: '2026-08-20T12:00:00.000Z',
+      seconds: 11,
+      strokes: [{ color: '#123456', width: 8, points: [{ x: 111, y: 222, t: 0 }, { x: 333, y: 444, t: 500 }] }],
+    }],
+    leftHanded: true,
+    notes: { 'rail-lines': 'REAL NOTE — never replace this with sample work.' },
+  };
+  const serializedRealSentinel = await writeRealPracticeRecord(page, realSentinel);
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
   await page.getByRole('link', { name: 'Try it with sample data' }).click();
   await expect(page).toHaveURL(/\?demo=1$/);
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
   const canvas = page.locator('canvas');
   const visibleCanvas = await canvas.boundingBox();
   expect(visibleCanvas).not.toBeNull();
@@ -284,6 +449,10 @@ test('@claim:demo-isolation landing demo shows bundled marks, reseeds, and remov
   await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(2);
   await page.getByRole('button', { name: 'Replay saved drill' }).first().click();
   await expect(page.getByText(/Loaded saved drill: Rail lines|Replay finished/)).toBeVisible();
+  await drawPointerStroke(page);
+  await page.getByRole('button', { name: 'Save this drill' }).click();
+  await expect(page.getByText('3 saved drills on this device.')).toBeVisible();
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Replay sample marks' })).toBeEnabled();
@@ -295,15 +464,19 @@ test('@claim:demo-isolation landing demo shows bundled marks, reseeds, and remov
     }
     return count;
   })).toBeGreaterThan(2_000);
-  await drawPointerStroke(page);
-  await page.getByRole('button', { name: 'Save this drill' }).click();
-  await expect(page.getByText('3 saved drills on this device.')).toBeVisible();
-  await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByText('2 saved drills on this device.')).toBeVisible();
   await expect.poll(async () => (await demoRecord(page) as { sessions?: unknown[] } | null)?.sessions?.length).toBe(2);
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
+  await page.getByRole('button', { name: /07 S curves/ }).click();
+  await expect(page.getByRole('heading', { name: 'S curves' })).toBeVisible();
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page).toHaveURL(/\/practice$/);
   await expect(page.getByRole('button', { name: 'Save this drill' })).toBeDisabled();
+  await expect(page.getByText('1 saved drill on this device.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Left-handed layout' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#note')).toHaveValue(realSentinel.notes['rail-lines']);
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
   expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
   expect(await demoRecord(page)).toBeNull();
   await page.goto('/?demo=1');
@@ -313,6 +486,7 @@ test('@claim:demo-isolation landing demo shows bundled marks, reseeds, and remov
   await expect(page).toHaveURL(/\/privacy$/);
   expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
   expect(await demoRecord(page)).toBeNull();
+  await expectRealPracticeRecord(page, serializedRealSentinel, realSentinel);
 });
 
 test('@claim:keyboard-drawing keyboard-only users can draw and save', async ({ page }) => {
@@ -365,19 +539,58 @@ test('@claim:saved-replay saved drills can be replayed after refresh', async ({ 
   await expect(page.getByRole('button', { name: 'Replay marks' })).toBeEnabled();
 });
 
-test('@claim:local-progress seven-day progress and JSON export contain the saved drill', async ({ page }, testInfo) => {
+test('@claim:local-progress calendar shows exactly seven consecutive days and JSON keeps all progress', async ({ page }, testInfo) => {
   await page.goto('/practice');
-  await drawPointerStroke(page);
-  await page.getByRole('button', { name: 'Save this drill' }).click();
-  await expect(page.getByText('1 saved drill on this device.')).toBeVisible();
+  const seededDates = await page.evaluate(() => {
+    const date = (daysAgo: number) => {
+      const value = new Date();
+      value.setHours(12, 0, 0, 0);
+      value.setDate(value.getDate() - daysAgo);
+      return value;
+    };
+    const dateKey = (value: Date) => [
+      value.getFullYear(),
+      String(value.getMonth() + 1).padStart(2, '0'),
+      String(value.getDate()).padStart(2, '0'),
+    ].join('-');
+    const point = { x: 100, y: 100, t: 0 };
+    const sessions = [0, 6, 8].map(daysAgo => ({
+      id: `progress-${daysAgo}`,
+      drillId: 'rail-lines',
+      date: date(daysAgo).toISOString(),
+      seconds: 5,
+      strokes: [{ color: '#bd3d35', width: 8, points: [point, { ...point, x: 140, t: 200 }] }],
+    }));
+    localStorage.setItem('touch-canvas-drills:data', JSON.stringify({ sessions, leftHanded: false, notes: {} }));
+    return { today: dateKey(date(0)), sixDaysAgo: dateKey(date(6)), eightDaysAgo: dateKey(date(8)) };
+  });
+  await page.reload();
+  const visibleDays = await page.locator('.day').evaluateAll(elements => elements.map(element => ({
+    date: element.getAttribute('data-date'),
+    count: Number(element.getAttribute('data-count')),
+    label: element.getAttribute('aria-label'),
+  })));
+  expect(visibleDays).toHaveLength(7);
+  expect(visibleDays.map(day => day.date)).toEqual([...visibleDays].map(day => day.date).sort());
+  for (let index = 1; index < visibleDays.length; index++) {
+    const previous = Date.parse(`${visibleDays[index - 1].date}T12:00:00Z`);
+    const current = Date.parse(`${visibleDays[index].date}T12:00:00Z`);
+    expect(current - previous).toBe(86_400_000);
+  }
+  expect(visibleDays.find(day => day.date === seededDates.today)?.count).toBe(1);
+  expect(visibleDays.find(day => day.date === seededDates.sixDaysAgo)?.count).toBe(1);
+  expect(visibleDays.some(day => day.date === seededDates.eightDaysAgo)).toBe(false);
+  expect(visibleDays.every(day => day.label?.includes('saved drill'))).toBe(true);
+  await expect(page.getByText('3 saved drills on this device.')).toBeVisible();
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export progress JSON' }).click();
   const download = await pending;
   const target = testInfo.outputPath('progress.json');
   await download.saveAs(target);
-  const exported = JSON.parse(await readFile(target, 'utf8')) as { sessions: { drillId: string }[] };
-  expect(exported.sessions).toHaveLength(1);
-  expect(exported.sessions[0].drillId).toBe('rail-lines');
+  const exported = JSON.parse(await readFile(target, 'utf8')) as { sessions: { drillId: string; date: string }[] };
+  expect(exported.sessions).toHaveLength(3);
+  expect(exported.sessions.every(session => session.drillId === 'rail-lines')).toBe(true);
+  expect(exported.sessions.some(session => session.date.startsWith(seededDates.eightDaysAgo))).toBe(true);
   expect((exported as { license?: string }).license).toBeUndefined();
 });
 
@@ -405,20 +618,67 @@ test('@claim:progress-roundtrip validated JSON import restores progress without 
   await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(1);
 });
 
-test('@claim:free-core core drills, saving, and exports need no license', async ({ page }) => {
+test('@claim:free-core an unlicensed visitor completes a later drill, replay, PNG, and JSON export', async ({ page }, testInfo) => {
+  const requests: string[] = [];
+  page.on('request', request => requests.push(request.url()));
   await page.goto('/practice');
+  expect(await page.evaluate(() => localStorage.getItem('sb_license:touch-canvas-drills'))).toBeNull();
   await expect(page.locator('#note')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Print practice week' })).toHaveCount(0);
   await expect(page.locator('[data-drill]')).toHaveCount(20);
-  await drawPointerStroke(page);
-  await expect(page.getByRole('button', { name: 'Save this drill' })).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Export PNG' })).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Export progress JSON' })).toBeEnabled();
+  await page.getByRole('button', { name: /20 Target rings/ }).click();
+  await expect(page.locator('#drill-title')).toHaveText('Target rings');
+  await drawSyntheticStroke(page);
+  await page.getByRole('button', { name: 'Save this drill' }).click();
+  await expect(page.getByText('1 saved drill on this device.')).toBeVisible();
+  await page.getByRole('button', { name: 'Replay saved drill' }).click();
+  await expect(page.getByText(/Loaded saved drill: Target rings|Replay finished/)).toBeVisible();
+
+  const pngPending = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export PNG' }).click();
+  const png = await pngPending;
+  expect(png.suggestedFilename()).toBe('target-rings.png');
+  const pngPath = testInfo.outputPath('free-target-rings.png');
+  await png.saveAs(pngPath);
+  const decoded = await inspectPng(page, pngPath);
+  expect(decoded).toMatchObject({ width: 900, height: 675 });
+  expect(decoded.coralPixels).toBeGreaterThan(100);
+
+  const jsonPending = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export progress JSON' }).click();
+  const json = await jsonPending;
+  const jsonPath = testInfo.outputPath('free-progress.json');
+  await json.saveAs(jsonPath);
+  const progress = JSON.parse(await readFile(jsonPath, 'utf8')) as { sessions: { drillId: string }[]; license?: string };
+  expect(progress.sessions).toHaveLength(1);
+  expect(progress.sessions[0].drillId).toBe('target-rings');
+  expect(progress.license).toBeUndefined();
+  expect(requests.filter(url => /\/checkout|\/verify\?license=/.test(url))).toEqual([]);
+  await expect(page.locator('#note')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Print practice week' })).toHaveCount(0);
 });
 
-test('@claim:paid-extras the $6 checkout and valid license expose notes and print', async ({ page }) => {
+test('@claim:paid-extras authoritative $6 one-time checkout adds persistent local notes and a seven-day print sheet', async ({ page, request }) => {
   await page.goto('/');
   await expect(page.getByText('$6', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Buy the extras' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout');
+  const checkout = await request.get('https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout', { maxRedirects: 0 });
+  expect(checkout.status()).toBe(303);
+  const checkoutLocation = checkout.headers().location;
+  if (!checkoutLocation) throw new Error('Sociobot checkout did not provide a hosted checkout location');
+  const hostedCheckout = await request.get(checkoutLocation);
+  expect(hostedCheckout.ok()).toBe(true);
+  const normalizedCheckout = (await hostedCheckout.text()).replace(/\\"/g, '"');
+  const productStart = normalizedCheckout.indexOf('"name":"Touch Canvas Drills"');
+  expect(productStart).toBeGreaterThan(-1);
+  const productMetadata = normalizedCheckout.slice(productStart, productStart + 2_000);
+  expect(productMetadata).toContain('"is_recurring":false');
+  expect(productMetadata).toContain('"price":{"type":"one_time_price","price":600,"currency":"USD"');
+
+  const verificationRequests: { method: string; body: string | null }[] = [];
+  page.on('request', item => {
+    if (item.url().includes('/verify?license=')) verificationRequests.push({ method: item.method(), body: item.postData() });
+  });
   await page.route('https://api.sociobot.in/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"valid":true,"reason":"ok"}' }));
   const verification = page.waitForResponse(item => item.url().includes('/verify?license='));
   await page.goto('/practice?license=fixture-license');
@@ -427,6 +687,37 @@ test('@claim:paid-extras the $6 checkout and valid license expose notes and prin
   await expect(page.locator('#note')).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Print practice week' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('sb_license:touch-canvas-drills'))).toBe('fixture-license');
+  const uniqueNote = 'Keep the second rail level with the blue guide.';
+  await page.locator('#note').fill(uniqueNote);
+  await page.getByRole('button', { name: 'Save note' }).click();
+  await expect(page.locator('.status')).toHaveText('Note saved on this device.');
+  await expect.poll(async () => (await realPracticeRecord(page) as { notes?: Record<string, string> } | null)?.notes?.['rail-lines']).toBe(uniqueNote);
+  expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
+  await page.reload();
+  await expect(page.locator('#note')).toHaveValue(uniqueNote);
+  expect(verificationRequests).toEqual([{ method: 'GET', body: null }]);
+
+  await page.evaluate(() => {
+    const data = JSON.parse(localStorage.getItem('touch-canvas-drills:data') || '{}');
+    const date = (daysAgo: number) => {
+      const value = new Date();
+      value.setHours(12, 0, 0, 0);
+      value.setDate(value.getDate() - daysAgo);
+      return value.toISOString();
+    };
+    const stroke = { color: '#bd3d35', width: 8, points: [{ x: 100, y: 100, t: 0 }, { x: 180, y: 140, t: 200 }] };
+    data.sessions = [0, 3, 6, 8].map(daysAgo => ({ id: `paid-${daysAgo}`, drillId: 'rail-lines', date: date(daysAgo), seconds: 5, strokes: [stroke] }));
+    localStorage.setItem('touch-canvas-drills:data', JSON.stringify(data));
+  });
+  await page.reload();
+  await expect(page.locator('#note')).toHaveValue(uniqueNote);
+  await expect(page.locator('.day')).toHaveCount(7);
+  await expect(page.locator('.day.done')).toHaveCount(3);
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.getByRole('heading', { name: 'Last seven days' })).toBeVisible();
+  await expect(page.locator('.calendar .day:visible')).toHaveCount(7);
+  await expect(page.locator('.settings')).toBeHidden();
+  await page.emulateMedia({ media: 'screen' });
   await page.evaluate(() => { window.print = () => { document.body.dataset.printed = 'true'; }; });
   await page.getByRole('button', { name: 'Print practice week' }).click();
   await expect(page.locator('body')).toHaveAttribute('data-printed', 'true');
@@ -648,7 +939,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
     });
     await page.reload();
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await writeFile(workerPath, original.replace("touch-drills-v8", "touch-drills-v8-regression"));
+    await writeFile(workerPath, original.replace("touch-drills-v9", "touch-drills-v9-regression"));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
     await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
     await Promise.all([
@@ -656,7 +947,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
       page.getByRole('button', { name: 'Update app' }).click(),
     ]);
     await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v8-regression');
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v9-regression');
   } finally {
     await writeFile(workerPath, original);
   }

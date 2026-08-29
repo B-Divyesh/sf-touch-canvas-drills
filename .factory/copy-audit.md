@@ -6,6 +6,13 @@ Word counts treat a hyphenated term, number, or path as one word.
 
 | Copy unit | Words | Result |
 | --- | ---: | --- |
+| Touch Canvas Drills — Practice touch drawing | 6 | Pass — title |
+| Timed touch drawing drills that work offline on phones and tablets. | 11 | Pass — description |
+| Skip to drills | 3 | Pass — skip link |
+| TC DRILLS | 2 | Pass — wordmark |
+| Demo | 1 | Pass — navigation |
+| Practice | 1 | Pass — navigation |
+| Privacy | 1 | Pass — navigation |
 | OFFLINE PRACTICE PAD / 20 DRILLS | 5 | Pass |
 | Practice touch drawing with short drills | 6 | Pass |
 | For people learning to draw on a phone or tablet who want steadier marks without a desktop editor. | 18 | Pass |
@@ -14,7 +21,8 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Start a blank practice | 4 | Pass |
 | Works offline after the first visit | 6 | Pass |
 | Your marks stay on this device | 6 | Pass |
-| All 20 drills are free; extras cost $6 once | 10 | Pass |
+| All 20 drills are free; extras cost $6 once | 9 | Pass |
+| A cassette case used as a drawing practice board with ink marks and pens. | 14 | Pass — image alt |
 | NEXT UP / 00:20 | 3 | Pass |
 | Rail lines | 2 | Pass |
 | Follow a faint guide. | 4 | Pass |
@@ -43,6 +51,9 @@ Word counts treat a hyphenated term, number, or path as one word.
 | Buy the extras | 3 | Pass |
 | Read purchase terms | 3 | Pass |
 | Touch-drawing practice for phones and tablets. | 6 | Pass |
+| Privacy | 1 | Pass — footer navigation |
+| Terms | 1 | Pass — footer navigation |
+| Built by Param Factory · v1.0.8 | 5 | Pass — attribution and version |
 
 ## README
 
@@ -71,6 +82,12 @@ Word counts treat a hyphenated term, number, or path as one word.
 | The repository contains no credentials. | 5 | Pass |
 | Read the in-app privacy page and terms. | 7 | Pass |
 | This project is licensed under MIT; see LICENSE. | 8 | Pass |
+
+## Catalog
+
+| Copy unit | Words | Result |
+| --- | ---: | --- |
+| Practice touch drawing with 20 guided offline drills on phones and tablets. | 12 | Pass — verb-first and 75 characters |
 
 No sentence exceeds 22 words and no banned term appears. Read aloud, the first
 screen states the job, audience, first action, and result in one breath.

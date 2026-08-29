@@ -9,14 +9,14 @@ visit.
 - Gives 20 timed line, curve, and shape drills.
 - Draw with a finger, stylus, or keyboard, then export one drill as PNG.
 - Saves progress only in the browser, shows seven days, and replays saved marks.
-- Exports and imports validated progress JSON for backup or device moves.
-- Includes an isolated demo at `/demo` with two replayable sample sessions. Demo data uses a
-  separate `demo:touch-canvas-drills:data` key in localStorage and IndexedDB.
+- Exports and imports checked progress files for backup or a new device.
+- Includes an isolated demo at `/?demo=1` with two replayable sample sessions.
+- The demo keeps its sample work separate from your own practice.
 - Rearranges the phone controls for left-handed practice.
 
-The free core practice is complete. A $6 one-time Sociobot license enables
-private drill notes and the printable week sheet. The app does not upload
-artwork or use third-party analytics.
+All 20 drills and both exports are free. A $6 one-time Sociobot license adds
+private drill notes and a printable seven-day practice sheet. The app does not
+upload artwork or use third-party analytics.
 
 ## Run and verify
 
@@ -28,7 +28,8 @@ npm run build
 ```
 
 The static deploy output is `dist/`, with `index.html` at its root. Use
-`npm run preview` to view that build. Open `/demo` to test the no-save sandbox.
+`npm run preview` to view that build. Open `/?demo=1` to try sample data that
+never changes your practice.
 
 ## Deployment
 

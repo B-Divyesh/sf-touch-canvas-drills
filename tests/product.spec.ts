@@ -41,8 +41,8 @@ async function guidePixelsNear(page: Page, x: number, y: number) {
   }, { x, y });
 }
 
-test('every product route and the update notice have no serious or critical axe violations', async ({ page }) => {
-  for (const route of ['/', '/demo', '/practice', '/privacy', '/terms']) {
+test('every product route, direct 404, and update notice have no serious or critical axe violations', async ({ page }) => {
+  for (const route of ['/', '/?demo=1', '/demo', '/practice', '/privacy', '/terms', '/404.html']) {
     await page.goto(route);
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations.filter(v => ['serious', 'critical'].includes(v.impact || '')), route).toEqual([]);
@@ -57,8 +57,63 @@ test('every product route and the update notice have no serious or critical axe 
   expect(updateResults.violations.find(violation => violation.id === 'region')).toBeUndefined();
 });
 
+test('routes set complete metadata and history navigation restores heading focus', async ({ page }) => {
+  const routes = [
+    { path: '/', title: 'Touch Canvas Drills — Practice touch drawing', canonical: '/' },
+    { path: '/?demo=1', title: 'Demo — Touch Canvas Drills', canonical: '/demo' },
+    { path: '/demo', title: 'Demo — Touch Canvas Drills', canonical: '/demo' },
+    { path: '/practice', title: 'Practice — Touch Canvas Drills', canonical: '/practice' },
+    { path: '/privacy', title: 'Privacy — Touch Canvas Drills', canonical: '/privacy' },
+    { path: '/terms', title: 'Terms — Touch Canvas Drills', canonical: '/terms' },
+  ];
+  for (const route of routes) {
+    await page.goto(route.path);
+    await expect(page).toHaveTitle(route.title);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://touch-canvas-drills.sociobot.in${route.canonical}`);
+    for (const selector of ['meta[name="description"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[property="og:url"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
+      await expect(page.locator(selector), `${route.path} ${selector}`).toHaveAttribute('content', /\S/);
+    }
+  }
+
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Practice', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  await expect(page.locator('#route-updates')).toHaveText('Make one steadier mark');
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  await expect(page.locator('#route-updates')).toHaveText('Practice touch drawing with short drills');
+});
+
+test('landing copy is literal and the sample action enters the isolated query demo in one click', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'How the drills work' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your practice data stays in this browser' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Optional notes and printable practice sheet' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Try the Rail lines sample' })).toHaveAttribute('href', '/?demo=1');
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await expect(page).toHaveURL(/\?demo=1$/);
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(2);
+  expect(await page.evaluate(() => localStorage.getItem('touch-canvas-drills:data'))).toBeNull();
+});
+
+test('static 404 has the shared shell, plain recovery copy, and complete metadata', async ({ page }) => {
+  await page.goto('/404.html');
+  await expect(page).toHaveTitle('Page not found — Touch Canvas Drills');
+  await expect(page.getByText('PAGE NOT FOUND')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'This page does not exist.' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
+  await expect(page.getByRole('contentinfo')).toContainText('Small touch drills for steadier drawing.');
+  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.4');
+  await expect(page.getByRole('link', { name: 'Back to the drills' })).toHaveAttribute('href', '/');
+  for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'link[rel="manifest"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
+    await expect(page.locator(selector), selector).toHaveCount(1);
+  }
+});
+
 test('@claim:twenty-drills demo loads all 20 guided drills', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/?demo=1');
   await expect(page.getByRole('heading', { name: 'Make one steadier mark' })).toBeVisible();
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://touch-canvas-drills.sociobot.in/demo');
   await expect(page.locator('[data-drill]')).toHaveCount(20);
@@ -117,7 +172,7 @@ test('@claim:pwa-install app shell provides an installable manifest and service 
 });
 
 test('@claim:demo-isolation reset reseeds and Start for real removes demo data from both stores', async ({ page }) => {
-  await page.goto('/demo');
+  await page.goto('/?demo=1');
   await expect.poll(async () => demoRecord(page)).not.toBeNull();
   const samples = await page.evaluate(() => JSON.parse(localStorage.getItem('demo:touch-canvas-drills:data') || '{}').sessions as { strokes: unknown[] }[]);
   expect(samples).toHaveLength(2);
@@ -136,6 +191,12 @@ test('@claim:demo-isolation reset reseeds and Start for real removes demo data f
   await page.getByRole('button', { name: 'Start for real' }).click();
   await expect(page).toHaveURL(/\/practice$/);
   await expect(page.getByRole('button', { name: 'Save this drill' })).toBeDisabled();
+  expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
+  expect(await demoRecord(page)).toBeNull();
+  await page.goto('/?demo=1');
+  await expect.poll(async () => demoRecord(page)).not.toBeNull();
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Privacy' }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
   expect(await page.evaluate(() => localStorage.getItem('demo:touch-canvas-drills:data'))).toBeNull();
   expect(await demoRecord(page)).toBeNull();
 });
@@ -443,7 +504,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
     });
     await page.reload();
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await writeFile(workerPath, original.replace("touch-drills-v4", "touch-drills-v4-regression"));
+    await writeFile(workerPath, original.replace("touch-drills-v5", "touch-drills-v5-regression"));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
     await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
     await Promise.all([
@@ -451,7 +512,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
       page.getByRole('button', { name: 'Update app' }).click(),
     ]);
     await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v4-regression');
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v5-regression');
   } finally {
     await writeFile(workerPath, original);
   }

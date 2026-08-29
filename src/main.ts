@@ -27,6 +27,34 @@ let keyboardDrawing = false;
 let licenseMessage = "";
 let licenseCheckInFlight = false;
 let importMessage = "";
+const siteOrigin = "https://touch-canvas-drills.sociobot.in";
+
+const metadata = {
+  "/": {
+    title: "Touch Canvas Drills — Practice touch drawing",
+    description: "Timed touch drawing drills that work offline on phones and tablets.",
+  },
+  "/demo": {
+    title: "Demo — Touch Canvas Drills",
+    description: "Try a ready-to-draw sample with two saved sessions. Demo work stays separate and is discarded when you leave.",
+  },
+  "/practice": {
+    title: "Practice — Touch Canvas Drills",
+    description: "Choose from 20 timed touch drawing drills, save marks locally, and review your recent practice.",
+  },
+  "/privacy": {
+    title: "Privacy — Touch Canvas Drills",
+    description: "Learn what Touch Canvas Drills stores in your browser and when license verification contacts Sociobot.",
+  },
+  "/terms": {
+    title: "Terms — Touch Canvas Drills",
+    description: "Read the terms for free touch drawing drills and the optional one-time extras purchase.",
+  },
+  "/404": {
+    title: "Page not found — Touch Canvas Drills",
+    description: "This page does not exist. Return to Touch Canvas Drills to choose a short drawing drill.",
+  },
+} as const;
 
 function esc(value: string) {
   return value.replace(
@@ -36,7 +64,7 @@ function esc(value: string) {
   );
 }
 function route() {
-  return location.pathname === "/demo" ? "/demo" : location.pathname;
+  return isDemo() ? "/demo" : location.pathname;
 }
 function isAppRoute() {
   return route() === "/practice" || route() === "/demo";
@@ -45,15 +73,36 @@ function nav(path: string) {
   history.pushState({}, "", path);
   render();
   window.scrollTo(0, 0);
-  requestAnimationFrame(() =>
-    document.querySelector<HTMLElement>("h1")?.focus(),
-  );
+  requestAnimationFrame(announceRoute);
+}
+function setMeta(selector: string, content: string) {
+  document.querySelector<HTMLMetaElement>(selector)?.setAttribute("content", content);
+}
+function updateMetadata() {
+  const activeRoute = route() in metadata ? route() as keyof typeof metadata : "/404";
+  const current = metadata[activeRoute];
+  const canonical = `${siteOrigin}${activeRoute}`;
+  document.title = current.title;
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", canonical);
+  setMeta('meta[name="description"]', current.description);
+  setMeta('meta[property="og:title"]', current.title);
+  setMeta('meta[property="og:description"]', current.description);
+  setMeta('meta[property="og:url"]', canonical);
+  setMeta('meta[name="twitter:title"]', current.title);
+  setMeta('meta[name="twitter:description"]', current.description);
+  setMeta('meta[name="twitter:image"]', `${siteOrigin}/social.webp`);
+}
+function announceRoute() {
+  const heading = document.querySelector<HTMLElement>("h1");
+  heading?.focus();
+  const announcer = document.querySelector<HTMLElement>("#route-updates");
+  if (announcer && heading) announcer.textContent = heading.textContent || document.title;
 }
 function footer() {
-  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.3</p></footer>`;
+  return `<footer class="footer shell"><p>Small touch drills for steadier drawing.</p><nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a></nav><p>Built by Param Factory · v1.0.4</p></footer>`;
 }
 function header() {
-  return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/demo" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
+  return `<header class="shell topbar"><a class="wordmark" href="/" data-link><span>TC</span>DRILLS</a><nav class="nav" aria-label="Main navigation"><a href="/?demo=1" data-link>Demo</a><a href="/practice" data-link>Practice</a><a href="/privacy" data-link>Privacy</a></nav></header>`;
 }
 function demoBar() {
   return isDemo()
@@ -61,8 +110,7 @@ function demoBar() {
     : "";
 }
 function landing() {
-  document.title = "Touch Canvas Drills — Practice touch drawing";
-  return `${header()}<main id="main" tabindex="-1"><section class="shell hero"><div><p class="eyebrow">OFFLINE PRACTICE PAD / 20 DRILLS</p><h1>Practice touch drawing with short drills</h1><p class="lede">For people learning to draw on a phone or tablet who want steadier marks without a desktop editor.</p><div class="hero-actions"><a class="button coral" href="/demo" data-link>Try it with sample data</a><span class="after">Starts a ready-to-draw sample drill.</span><a class="button secondary" href="/practice" data-link>Start a blank practice</a></div><ul class="facts"><li>Works offline after the first visit</li><li>Your strokes stay on this device</li><li>Free core drills; $6 one-time extras</li></ul></div><img class="hero-art" src="${heroUrl}" width="1024" height="1024" fetchpriority="high" decoding="async" alt="A cassette case used as a drawing practice board with ink marks and pens." /></section><section class="section"><div class="shell preview"><div class="preview-tape" aria-hidden="true"></div><div><p class="tape-label">NEXT UP / 00:20</p><h2>Rail lines</h2><p>Follow a faint guide. Draw your own marks. Keep the replay if you want to study it.</p><a class="button coral" href="/demo" data-link>Open the practice pad</a></div></div></section><section class="section"><div class="shell"><p class="eyebrow">HOW IT WORKS</p><h2>One small mark at a time</h2><div class="steps"><article class="step"><p class="number">01</p><h3>Pick a drill</h3><p>Choose lines, curves, or simple shapes.</p></article><article class="step"><p class="number">02</p><h3>Draw for one timer</h3><p>Use a finger or a stylus. Pressure does not matter.</p></article><article class="step"><p class="number">03</p><h3>Review your mark</h3><p>Replay it, save the session, and return tomorrow.</p></article></div></div></section><section class="section"><div class="shell plain-grid"><div><p class="eyebrow">PRIVATE BY DESIGN</p><h2>Practice stays close to your hand</h2><p>Your sessions live in this browser. There is no account, upload, social feed, or automated critique.</p><p>Export a single drill image when you want a copy.</p></div><div class="pricing"><p class="tape-label">ONE-TIME / OPTIONAL</p><h2>Keep the tape rolling</h2><p class="price">$6</p><p>Paid extras add private drill notes and a printable seven-day practice sheet. The 20 drills, progress, and image export stay free.</p><a class="button" href="https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout">Buy the extras</a><p><a href="/terms" data-link>Read purchase terms</a></p></div></div></section></main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1"><section class="shell hero"><div><p class="eyebrow">OFFLINE PRACTICE PAD / 20 DRILLS</p><h1>Practice touch drawing with short drills</h1><p class="lede">For people learning to draw on a phone or tablet who want steadier marks without a desktop editor.</p><div class="hero-actions"><a class="button coral" href="/?demo=1" data-link>Try it with sample data</a><span class="after">Starts a ready-to-draw sample drill.</span><a class="button secondary" href="/practice" data-link>Start a blank practice</a></div><ul class="facts"><li>Works offline after the first visit</li><li>Your strokes stay on this device</li><li>Free core drills; $6 one-time extras</li></ul></div><img class="hero-art" src="${heroUrl}" width="1024" height="1024" fetchpriority="high" decoding="async" alt="A cassette case used as a drawing practice board with ink marks and pens." /></section><section class="section"><div class="shell preview"><div class="preview-tape" aria-hidden="true"></div><div><p class="tape-label">NEXT UP / 00:20</p><h2>Rail lines</h2><p>Follow a faint guide. Draw your own marks. Keep the replay if you want to study it.</p><a class="button coral" href="/?demo=1" data-link>Try the Rail lines sample</a></div></div></section><section class="section"><div class="shell"><p class="eyebrow">HOW IT WORKS</p><h2>How the drills work</h2><div class="steps"><article class="step"><p class="number">01</p><h3>Pick a drill</h3><p>Choose lines, curves, or simple shapes.</p></article><article class="step"><p class="number">02</p><h3>Draw for one timer</h3><p>Use a finger or a stylus. Pressure does not matter.</p></article><article class="step"><p class="number">03</p><h3>Review your mark</h3><p>Replay it, save the session, and return tomorrow.</p></article></div></div></section><section class="section"><div class="shell plain-grid"><div><p class="eyebrow">PRIVATE BY DESIGN</p><h2>Your practice data stays in this browser</h2><p>Your sessions live in this browser. There is no account, upload, social feed, or automated critique.</p><p>Export a single drill image when you want a copy.</p></div><div class="pricing"><p class="tape-label">ONE-TIME / OPTIONAL</p><h2>Optional notes and printable practice sheet</h2><p class="price">$6</p><p>Paid extras add private drill notes and a printable seven-day practice sheet. The 20 drills, progress, and image export stay free.</p><a class="button" href="https://api.sociobot.in/api/v1/products/touch-canvas-drills/checkout">Buy the extras</a><p><a href="/terms" data-link>Read purchase terms</a></p></div></div></section></main>${footer()}`;
 }
 
 function days() {
@@ -97,17 +145,14 @@ function savedTakes() {
 function appView() {
   const drill = drills[chosen];
   const left = data.leftHanded ? "left" : "";
-  document.title = `${isDemo() ? "Demo" : "Practice"} — Touch Canvas Drills`;
-  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved takes</h3>${savedTakes()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. Core practice remains free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${licenseMessage || (data.licenseValid ? "Extras are active." : "No active extras license.")}</p><div class="import-controls"><button class="export-data secondary">Export progress JSON</button><button class="import-trigger secondary" type="button">Import progress JSON</button><label class="sr-only" for="progress-import">Choose a progress JSON file</label><input class="progress-import" id="progress-import" type="file" accept="application/json,.json" hidden /></div><p class="import-result" aria-live="polite">${esc(importMessage)}</p></article></section></main>${footer()}`;
+  return `${header()}${demoBar()}<main id="main" tabindex="-1" class="shell"><section class="app-head"><div><p class="eyebrow">${isDemo() ? "SAMPLE TAPE" : "PRACTICE TAPE"} / ${String(chosen + 1).padStart(2, "0")} OF 20</p><h1>Make one steadier mark</h1></div><button class="hand-toggle" aria-pressed="${data.leftHanded}">${data.leftHanded ? "Left-handed layout" : "Right-handed layout"}</button></section><div class="app-layout ${left}"><aside class="drill-list" aria-label="Drill list"><header><strong>20 short drills</strong><br><small>Lines · curves · shapes</small></header><ol>${drills.map((d, i) => `<li><button class="drill-item ${i === chosen ? "active" : ""}" data-drill="${i}" aria-current="${i === chosen ? "true" : "false"}"><span>${String(i + 1).padStart(2, "0")} ${d.title}</span><span>${d.seconds}s</span></button></li>`).join("")}</ol></aside><section class="deck" aria-labelledby="drill-title"><div class="deck-top"><div><p class="tape-label">${drill.kind} / TIMER RUNS ON FIRST MARK</p><h2 id="drill-title">${drill.title}</h2><p class="cue">${drill.cue}</p></div><output class="clock" aria-label="Seconds remaining">00:${String(seconds).padStart(2, "0")}</output></div><div class="canvas-wrap"><canvas class="drill-canvas" width="900" height="675" tabindex="0" role="application" aria-roledescription="keyboard drawing pad" aria-label="Drawing area for ${drill.title}" aria-describedby="canvas-help"></canvas></div><p class="canvas-help" id="canvas-help">Draw with a finger or stylus. For a keyboard, focus the drawing pad, press Space to lower or lift the pen, and use Arrow keys to draw. Hold Shift for longer steps. Press Escape to clear.</p><div class="deck-controls"><button class="clear">Clear marks</button><button class="replay" ${current.length ? "" : "disabled"}>Replay marks</button><button class="save-session" ${current.length ? "" : "disabled"}>Save this drill</button><button class="export">Export PNG</button></div><div class="status" aria-live="polite">${statusText || "Your timer starts when you draw."}</div></section></div><section class="progress-panel"><article class="calendar"><p class="eyebrow">LOCAL PROGRESS</p><h2>Last seven days</h2><div class="days" aria-label="Practice activity for the last seven days">${days()}</div><p>${data.sessions.length ? `${data.sessions.length} saved drill${data.sessions.length === 1 ? "" : "s"} on this device.` : "No saved drills yet. Save one after you draw."}</p><h3>Saved takes</h3>${savedTakes()}</article><article class="settings"><p class="eyebrow">YOUR SETUP</p><h2>Review and restore</h2><label for="note">Private note for this drill ${data.licenseValid ? "" : "(paid extra)"}</label><textarea id="note" rows="3" ${data.licenseValid ? "" : "disabled"} placeholder="What changed in this take?">${esc(data.notes[drill.id] || "")}</textarea>${data.licenseValid ? '<button class="save-note">Save note</button>' : '<p class="notice">Notes are included in the $6 one-time extras. All 20 drills and both exports remain free.</p>'}<label for="license">Have a license? Paste it</label><div class="row"><input id="license" autocomplete="off" placeholder="License token" value="${esc(data.license || "")}" /><button class="verify-license">Verify license</button></div><p id="license-result" aria-live="polite">${licenseMessage || (data.licenseValid ? "Extras are active." : "No active extras license.")}</p><div class="import-controls"><button class="export-data secondary">Export progress JSON</button><button class="import-trigger secondary" type="button">Import progress JSON</button><label class="sr-only" for="progress-import">Choose a progress JSON file</label><input class="progress-import" id="progress-import" type="file" accept="application/json,.json" hidden /></div><p class="import-result" aria-live="polite">${esc(importMessage)}</p></article></section></main>${footer()}`;
 }
 function legal(kind: "privacy" | "terms") {
   const privacy = kind === "privacy";
-  document.title = `${privacy ? "Privacy" : "Terms"} — Touch Canvas Drills`;
-  return `${header()}<main id="main" tabindex="-1" class="shell legal"><p class="eyebrow">${privacy ? "PRIVACY" : "TERMS"}</p><h1>${privacy ? "Your practice stays on your device" : "Simple terms for a small practice tool"}</h1>${privacy ? "<p>Touch Canvas Drills stores drills, marks, layout choice, and optional license details in your browser. It does not send artwork to us.</p><p>License verification contacts Sociobot only when you add a license and when a cached verification is older than one day. Their checkout handles payment. Clearing browser data removes local practice data.</p><p>Demo data uses a separate browser key and is discarded when you leave demo mode.</p>" : "<p>Touch Canvas Drills is a local practice utility. Use it at your own pace. A $6 one-time purchase adds notes and a printable week sheet. Checkout, refunds, and license revocation are handled by Sociobot, the merchant of record.</p><p>The free drills, progress export, and image export remain available without a purchase. The product is provided as-is.</p>"}</main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1" class="shell legal"><p class="eyebrow">${privacy ? "PRIVACY" : "TERMS"}</p><h1>${privacy ? "Your practice stays on your device" : "Simple terms for a small practice tool"}</h1>${privacy ? "<p>Touch Canvas Drills stores drills, marks, layout choice, and optional license details in your browser. It does not send artwork to us.</p><p>License verification contacts Sociobot only when you add a license and when a cached verification is older than one day. Their checkout handles payment. Clearing browser data removes local practice data.</p><p>Demo data uses a separate browser key and is discarded when you leave demo mode.</p>" : "<p>Touch Canvas Drills is a local practice utility. Use it at your own pace. A $6 one-time purchase adds notes and a printable seven-day practice sheet. Checkout, refunds, and license revocation are handled by Sociobot, the merchant of record.</p><p>The free drills, progress export, and image export remain available without a purchase. The product is provided as-is.</p>"}</main>${footer()}`;
 }
 function notFound() {
-  document.title = "Page not found — Touch Canvas Drills";
-  return `${header()}<main id="main" tabindex="-1" class="shell not-found"><p class="eyebrow">TAPE ENDED</p><h1>That page is not on this tape.</h1><p>Pick a drill and make a new mark.</p><a class="button coral" href="/" data-link>Back to the drills</a></main>${footer()}`;
+  return `${header()}<main id="main" tabindex="-1" class="shell not-found"><p class="eyebrow">PAGE NOT FOUND</p><h1>This page does not exist.</h1><p>Choose a drawing drill from the home page.</p><a class="button coral" href="/" data-link>Back to the drills</a></main>${footer()}`;
 }
 
 function render() {
@@ -118,9 +163,7 @@ function render() {
   else if (route() === "/privacy" || route() === "/terms")
     app.innerHTML = legal(route().slice(1) as "privacy" | "terms");
   else app.innerHTML = notFound();
-  const canonicalPath = ["/", "/demo", "/practice", "/privacy", "/terms"].includes(route()) ? route() : "/";
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", `https://touch-canvas-drills.sociobot.in${canonicalPath}`);
-  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute("content", document.title);
+  updateMetadata();
   document.querySelector("h1")?.setAttribute("tabindex", "-1");
   if (isAppRoute() && data.licenseValid) {
     document
@@ -138,9 +181,16 @@ function render() {
 }
 function bind() {
   document.querySelectorAll<HTMLAnchorElement>("[data-link]").forEach((a) =>
-    a.addEventListener("click", (event) => {
+    a.addEventListener("click", async (event) => {
       event.preventDefault();
-      nav(a.getAttribute("href")!);
+      const target = a.getAttribute("href")!;
+      const targetUrl = new URL(target, location.origin);
+      const targetIsDemo = targetUrl.pathname === "/demo" || targetUrl.searchParams.get("demo") === "1";
+      if (isDemo() && !targetIsDemo) {
+        await clearDemoData();
+        resetPracticeState();
+      }
+      nav(target);
     }),
   );
   document.querySelector(".reset-demo")?.addEventListener("click", async () => {
@@ -689,7 +739,7 @@ function captureReturnedLicense() {
 }
 window.addEventListener("popstate", () => {
   render();
-  requestAnimationFrame(() => document.querySelector<HTMLElement>("h1")?.focus());
+  requestAnimationFrame(announceRoute);
 });
 captureReturnedLicense();
 render();

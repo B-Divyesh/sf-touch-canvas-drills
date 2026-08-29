@@ -243,8 +243,8 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "bind()",
-      "target": "resetDemo()",
+      "source": "importData()",
+      "target": "importProgress()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -254,8 +254,8 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "importData()",
-      "target": "importProgress()",
+      "source": "bind()",
+      "target": "resetDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

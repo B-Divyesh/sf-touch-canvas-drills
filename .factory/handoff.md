@@ -1,39 +1,68 @@
-# Touch Canvas Drills review 2 handoff
+# Touch Canvas Drills polish 2 handoff
 
 ## Result
 
-**FAIL — four minor findings remain.** This was an independent, non-modifying
-adversarial review. Product code and product assets were not changed.
+**PASS — all 13 cumulative review findings are closed.** Version 1.0.5 is
+deployed at <https://touch-canvas-drills.sociobot.in>. The cassette-zine visual
+system and offline PWA deployment class are unchanged.
 
-The full report is in `.factory/review-2.md`.
+## What changed
 
-## What was verified
+- Standardized every persisted drawing label to **saved drill** and replaced
+  the generic privacy slogan with **LOCAL PRIVACY**.
+- Added `deployment-policy` and `no-repository-credentials` to the claims
+  registry, with one tagged observable test for each.
+- Added a registry integrity test and made the privacy request test work
+  against either a local build or the live origin.
+- Updated the catalog line, copy audit, demo documentation, PWA cache/version,
+  static 404 version, and public footer to v1.0.5.
+- Preserved all round-1 fixes for first-screen wording, query demo isolation,
+  routing, metadata, legal links, focus, 404 handling, accessibility, mobile
+  controls, offline navigation, durable replay, and named drawing guides.
 
-- Cold live loads at 390px and desktop passed the first-read gate.
-- The live one-click demo displayed realistic marked samples, preserved its
-  banner, reset correctly, and removed only demo storage when leaving.
-- The ordinary demo flow made only same-origin requests.
-- Every one of the 19 registered claim commands passed individually from a
-  fresh local clone after `npm ci`.
-- The fresh-clone `npm run test:all` passed lint, typecheck, unit tests, build,
-  and 31 Playwright tests.
-- Live routes, 404, metadata, headers, links, focus/back behaviour, sitemap,
-  visual identity, and all prior review findings were rechecked.
+The finding-by-finding record is in `.factory/polish-2.md`.
 
-## Remaining work
+## Exact verification
 
-1. Register and tag the README deployment/security/caching and
-   no-credentials claims, or remove those unregistered claims.
-2. Use `saved drill` consistently for persisted drawings.
-3. Replace or remove the generic `PRIVATE BY DESIGN` label.
-
-## Verification commands
+From a clean clone of repair commit `c7b56c9`:
 
 ```sh
 npm ci
 npm run test:all
-node -e "for (const x of require('./.factory/claims.json')) console.log(x.test)"
+npm audit --audit-level=high
 ```
 
-Run each printed claim command separately. The demo entry point is
-<https://touch-canvas-drills.sociobot.in/?demo=1>.
+Results: 0 vulnerabilities; lint and typecheck passed; 1/1 unit test passed;
+the production build passed; 33/33 Playwright tests passed. Every one of the
+21 commands listed in `.factory/claims.json` was then run separately and
+selected one passing claim test.
+
+Build output: 29.79 KB JS raw / 10.97 KB gzip, 9.51 KB CSS raw / 2.85 KB
+gzip, and a 177.28 KB hero WebP. `dist/index.html` is at the artifact root.
+
+Local Lighthouse on `/?demo=1`: 100 performance, 100 accessibility, 100 best
+practices, 100 SEO; LCP 1.5 s, CLS 0, TBT 30 ms.
+
+Live Lighthouse after deployment: 100 performance, 100 accessibility, 100
+best practices, 100 SEO; LCP 0.9 s, CLS 0, TBT 10 ms.
+
+The factory URL verifier passed the live root and `/?demo=1` with no console
+errors. A separate cold live Playwright run passed 8/8 route, title, metadata,
+focus, Axe, copy, demo-isolation, privacy, and 390 px checks. The live unknown
+route returned HTTP 404; app/legal routes returned 200; security headers were
+present.
+
+## Run and deploy
+
+```sh
+npm ci
+npm run test:all
+npm run build
+/opt/fleet/lib/deploy-static.sh touch-canvas-drills /work/repo/dist
+```
+
+Production deployment ID: `c148c970-40e2-4885-8c7f-e2130759f620`.
+
+## Known gaps and next steps
+
+None. No review finding or observed defect remains unresolved.

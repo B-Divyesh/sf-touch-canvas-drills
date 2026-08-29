@@ -164,14 +164,14 @@ test('@claim:png-export exports one drill image', async ({ page }) => {
 });
 
 test('@claim:privacy-local demo sends no cross-origin requests', async ({ page }) => {
-  const foreign: string[] = [];
-  page.on('request', request => {
-    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') foreign.push(request.url());
-  });
+  const requests: string[] = [];
+  page.on('request', request => requests.push(request.url()));
   await page.goto('/demo');
   await drawPointerStroke(page);
   await page.getByRole('button', { name: 'Save this drill' }).click();
   await page.getByRole('button', { name: 'Reset demo' }).click();
+  const productOrigin = new URL(page.url()).origin;
+  const foreign = requests.filter(url => new URL(url).origin !== productOrigin);
   expect(foreign).toEqual([]);
 });
 

@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { readFile, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { extname, join } from 'node:path';
 
 async function drawPointerStroke(page: Page) {
   const canvas = page.locator('canvas');
@@ -89,12 +91,18 @@ test('landing copy is literal and the sample action enters the isolated query de
   await expect(page.getByRole('heading', { name: 'How the drills work' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Your practice data stays in this browser' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Optional notes and printable practice sheet' })).toBeVisible();
+  await expect(page.getByText('LOCAL PRIVACY')).toBeVisible();
+  await expect(page.getByText('Replay it, save the drill, and return tomorrow.')).toBeVisible();
+  await expect(page.getByText('Your saved drills live in this browser.')).toBeVisible();
+  for (const stale of ['PRIVATE BY DESIGN', 'save the session', 'Your sessions live']) {
+    await expect(page.getByText(stale, { exact: false })).toHaveCount(0);
+  }
   await expect(page.getByRole('link', { name: 'Try the Rail lines sample' })).toHaveAttribute('href', '/?demo=1');
   await page.getByRole('link', { name: 'Try it with sample data' }).click();
   await expect(page).toHaveURL(/\?demo=1$/);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(2);
   expect(await page.evaluate(() => localStorage.getItem('touch-canvas-drills:data'))).toBeNull();
 });
 
@@ -104,12 +112,23 @@ test('README and catalog use the reviewed plain wording', async () => {
   expect(readme).toContain('The demo keeps its sample work separate from your own practice.');
   expect(readme).toContain('All 20 drills and both exports are free. A $6 one-time Sociobot license adds\nprivate drill notes and a printable seven-day practice sheet.');
   expect(readme).toContain('Open `/?demo=1` to try sample data that\nnever changes your practice.');
+  expect(readme).toContain('replays saved drills.');
   for (const stale of ['validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox']) {
     expect(readme).not.toContain(stale);
   }
   const catalog = (await readFile('.factory/catalog-description.txt', 'utf8')).trim();
-  expect(catalog).toMatch(/^Practice\b/);
+  expect(catalog).toMatch(/^Build\b/);
   expect(catalog.length).toBeLessThanOrEqual(120);
+});
+
+test('claims registry has one discoverable test tag for every claim', async () => {
+  const claims = JSON.parse(await readFile('.factory/claims.json', 'utf8')) as { id: string; test: string }[];
+  const source = await readFile('tests/product.spec.ts', 'utf8');
+  expect(new Set(claims.map(claim => claim.id)).size).toBe(claims.length);
+  for (const claim of claims) {
+    expect(claim.test).toBe(`npm test -- --grep @claim:${claim.id}`);
+    expect(source.match(new RegExp(`@claim:${claim.id}(?![a-z0-9-])`, 'g'))).toHaveLength(1);
+  }
 });
 
 test('static 404 has the shared shell, plain recovery copy, and complete metadata', async ({ page }) => {
@@ -119,7 +138,7 @@ test('static 404 has the shared shell, plain recovery copy, and complete metadat
   await expect(page.getByRole('heading', { name: 'This page does not exist.' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('Small touch drills for steadier drawing.');
-  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.4');
+  await expect(page.getByRole('contentinfo')).toContainText('Built by Param Factory · v1.0.5');
   await expect(page.getByRole('link', { name: 'Back to the drills' })).toHaveAttribute('href', '/');
   for (const selector of ['meta[name="description"]', 'link[rel="canonical"]', 'link[rel="manifest"]', 'link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'meta[property="og:title"]', 'meta[property="og:description"]', 'meta[property="og:image"]', 'meta[name="twitter:title"]', 'meta[name="twitter:description"]', 'meta[name="twitter:image"]']) {
     await expect(page.locator(selector), selector).toHaveCount(1);
@@ -191,9 +210,9 @@ test('@claim:demo-isolation reset reseeds and Start for real removes demo data f
   const samples = await page.evaluate(() => JSON.parse(localStorage.getItem('demo:touch-canvas-drills:data') || '{}').sessions as { strokes: unknown[] }[]);
   expect(samples).toHaveLength(2);
   expect(samples.every(sample => sample.strokes.length > 0)).toBe(true);
-  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(2);
-  await page.getByRole('button', { name: 'Replay saved marks' }).first().click();
-  await expect(page.getByText(/Loaded saved Rail lines marks|Replay finished/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(2);
+  await page.getByRole('button', { name: 'Replay saved drill' }).first().click();
+  await expect(page.getByText(/Loaded saved drill: Rail lines|Replay finished/)).toBeVisible();
   await page.getByRole('button', { name: 'Reset demo' }).click();
   await expect(page.getByRole('heading', { name: 'Rail lines' })).toBeVisible();
   await drawPointerStroke(page);
@@ -255,13 +274,13 @@ test('@claim:handed-layout left-handed mode rearranges and persists the phone co
   expect((await page.locator('.drill-list').boundingBox())!.y).toBeLessThan((await page.locator('.deck').boundingBox())!.y);
 });
 
-test('@claim:saved-replay saved marks can be replayed after refresh', async ({ page }) => {
+test('@claim:saved-replay saved drills can be replayed after refresh', async ({ page }) => {
   await page.goto('/practice');
   await drawPointerStroke(page);
   await page.getByRole('button', { name: 'Save this drill' }).click();
   await page.reload();
-  await page.getByRole('button', { name: 'Replay saved marks' }).click();
-  await expect(page.getByText(/Loaded saved Rail lines marks|Replay finished/)).toBeVisible();
+  await page.getByRole('button', { name: 'Replay saved drill' }).click();
+  await expect(page.getByText(/Loaded saved drill: Rail lines|Replay finished/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Replay marks' })).toBeEnabled();
 });
 
@@ -295,14 +314,14 @@ test('@claim:progress-roundtrip validated JSON import restores progress without 
   await expect(page.getByText('No saved drills yet. Save one after you draw.')).toBeVisible();
   await page.locator('#progress-import').setInputFiles(target);
   await expect(page.getByText('Imported 1 saved drill. Existing progress was kept.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(1);
   await page.locator('#progress-import').setInputFiles({
     name: 'unsafe.json',
     mimeType: 'application/json',
     buffer: Buffer.from('{"sessions":[{"id":"bad","drillId":"not-a-drill"}]}'),
   });
   await expect(page.getByText('Session 1 has invalid progress data.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Replay saved marks' })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Replay saved drill' })).toHaveCount(1);
 });
 
 test('@claim:free-core core drills, saving, and exports need no license', async ({ page }) => {
@@ -518,7 +537,7 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
     });
     await page.reload();
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
-    await writeFile(workerPath, original.replace("touch-drills-v5", "touch-drills-v5-regression"));
+    await writeFile(workerPath, original.replace("touch-drills-v6", "touch-drills-v6-regression"));
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
     await expect(page.getByText('A newer drill tape is ready.')).toBeVisible({ timeout: 15_000 });
     await Promise.all([
@@ -526,13 +545,13 @@ test('a genuine service-worker revision offers and applies an update', async ({ 
       page.getByRole('button', { name: 'Update app' }).click(),
     ]);
     await page.waitForFunction(() => navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js'));
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v5-regression');
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 15_000 }).toContain('touch-drills-v6-regression');
   } finally {
     await writeFile(workerPath, original);
   }
 });
 
-test('built deployment policy ships CSP, immutable hashed assets, and a real 404 override', async ({ page, request }) => {
+test('@claim:deployment-policy built policy ships routes, CSP, immutable assets, and a real 404', async ({ page, request }) => {
   const response = await request.get('/staticwebapp.config.json');
   expect(response.ok()).toBeTruthy();
   const policy = await response.json() as {
@@ -549,4 +568,30 @@ test('built deployment policy ships CSP, immutable hashed assets, and a real 404
   await page.goto('/');
   const assetUrls = await page.locator('script[src], link[rel="stylesheet"]').evaluateAll(elements => elements.map(element => element.getAttribute('src') || element.getAttribute('href')));
   expect(assetUrls.filter(Boolean).every(url => /\/assets\/[^/]+-[A-Za-z0-9_-]+\.(js|css)$/.test(url!))).toBeTruthy();
+});
+
+test('@claim:no-repository-credentials tracked source and build output contain no credentials', async () => {
+  const textExtensions = new Set(['.css', '.html', '.js', '.json', '.md', '.svg', '.ts', '.txt', '.xml', '.yaml', '.yml']);
+  const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+  const built: string[] = [];
+  async function collect(directory: string) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) await collect(path);
+      else built.push(path);
+    }
+  }
+  await collect('dist');
+  const files = [...new Set([...tracked, ...built])].filter(path => textExtensions.has(extname(path)));
+  const patterns = [
+    new RegExp(['(?:sbk|sk-proj|ghp|github_pat)', '_[A-Za-z0-9_-]{16,}'].join(''), 'g'),
+    new RegExp(['(?:AZURE_OPENAI_API_KEY|FACTORY_SOCIOBOT_KEY|CLIENT_SECRET)', '\\s*[=:]\\s*["\\\']?[A-Za-z0-9+/=_-]{16,}'].join(''), 'gi'),
+    new RegExp(['-----BEGIN ', '(?:RSA |EC |OPENSSH )?PRIVATE KEY-----'].join(''), 'g'),
+  ];
+  const findings: string[] = [];
+  for (const file of files) {
+    const content = await readFile(file, 'utf8');
+    if (patterns.some(pattern => { pattern.lastIndex = 0; return pattern.test(content); })) findings.push(file);
+  }
+  expect(findings, 'credential-like values found').toEqual([]);
 });

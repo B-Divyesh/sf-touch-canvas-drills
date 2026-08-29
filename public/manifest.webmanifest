@@ -1,7 +1,7 @@
 {
   "name": "Touch Canvas Drills",
   "short_name": "Touch Drills",
-  "start_url": "/?v=2",
+  "start_url": "/?v=3",
   "display": "standalone",
   "background_color": "#f4eedc",
   "theme_color": "#f4eedc",

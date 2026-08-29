@@ -8,9 +8,9 @@ visit.
 
 - Gives 20 timed line, curve, and shape drills.
 - Draw with a finger, stylus, or keyboard, then export one drill as PNG.
-- Saves progress only in the browser, shows seven days, and replays saved marks.
+- Saves progress only in the browser, shows seven days, and replays saved drills.
 - Exports and imports checked progress files for backup or a new device.
-- Includes an isolated demo at `/?demo=1` with two replayable sample sessions.
+- Includes an isolated demo at `/?demo=1` with two replayable saved drills.
 - The demo keeps its sample work separate from your own practice.
 - Rearranges the phone controls for left-handed practice.
 
@@ -35,8 +35,8 @@ never changes your practice.
 
 Deploy `dist/` as a static app. The emitted `staticwebapp.config.json` adds
 explicit app routes, a styled 404 response, security headers, and immutable
-caching for hashed assets. The factory registers
-the paid product; no credentials are stored in this repository.
+caching for hashed assets. The factory registers the paid product; no
+credentials are stored in this repository.
 
 ## Privacy and terms
 

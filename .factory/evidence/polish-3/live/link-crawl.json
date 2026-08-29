@@ -1,0 +1,50 @@
+[
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/404.html#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/?demo=1",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/?demo=1#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/demo#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/practice",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/practice#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/privacy",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/privacy#main",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/terms",
+    "status": 200
+  },
+  {
+    "url": "https://touch-canvas-drills.sociobot.in/terms#main",
+    "status": 200
+  }
+]

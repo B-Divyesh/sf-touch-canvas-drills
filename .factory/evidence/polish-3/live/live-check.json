@@ -1,0 +1,76 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Touch Canvas Drills — Practice touch drawing"
+    },
+    {
+      "path": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Touch Canvas Drills"
+    },
+    {
+      "path": "/demo",
+      "status": 200,
+      "title": "Demo — Touch Canvas Drills"
+    },
+    {
+      "path": "/practice",
+      "status": 200,
+      "title": "Practice — Touch Canvas Drills"
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "title": "Privacy — Touch Canvas Drills"
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "title": "Terms — Touch Canvas Drills"
+    },
+    {
+      "path": "/not-a-real-route",
+      "status": 404,
+      "title": "Page not found — Touch Canvas Drills"
+    }
+  ],
+  "axe": [
+    {
+      "path": "/",
+      "violations": 0
+    },
+    {
+      "path": "/?demo=1",
+      "violations": 0
+    },
+    {
+      "path": "/demo",
+      "violations": 0
+    },
+    {
+      "path": "/practice",
+      "violations": 0
+    },
+    {
+      "path": "/privacy",
+      "violations": 0
+    },
+    {
+      "path": "/terms",
+      "violations": 0
+    }
+  ],
+  "demo": {
+    "canvasY": 544,
+    "coralPixels": 9780,
+    "resetCoralPixels": 9780,
+    "entry": "landing action",
+    "exit": "https://touch-canvas-drills.sociobot.in/practice",
+    "localStorageIsolation": true
+  },
+  "offline": true,
+  "focus": true,
+  "errors": []
+}

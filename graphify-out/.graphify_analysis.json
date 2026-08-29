@@ -208,11 +208,6 @@
       "degree": 11
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
-      "degree": 9
-    },
-    {
       "id": "src_main_appview",
       "label": "appView()",
       "degree": 9
@@ -223,17 +218,44 @@
       "degree": 9
     },
     {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 9
+    },
+    {
       "id": "src_main_canvas",
       "label": "canvas()",
       "degree": 8
     },
     {
-      "id": "src_main_setupcanvas",
-      "label": "setupCanvas()",
+      "id": "src_main_keyboarddraw",
+      "label": "keyboardDraw()",
       "degree": 7
     }
   ],
   "surprises": [
+    {
+      "source": "appView()",
+      "target": "isDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "demoBar()",
+      "target": "isDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
     {
       "source": "bind()",
       "target": "clearDemoData()",
@@ -259,28 +281,6 @@
     {
       "source": "bind()",
       "target": "resetDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "render()",
-      "target": "seedDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "appView()",
-      "target": "isDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

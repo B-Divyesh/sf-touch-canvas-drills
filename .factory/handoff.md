@@ -1,12 +1,29 @@
-# Touch Canvas Drills polish 2 handoff
+# Touch Canvas Drills verification 6 handoff
 
 ## Result
 
-**PASS — all 13 cumulative review findings are closed.** Version 1.0.5 is
-deployed at <https://touch-canvas-drills.sociobot.in>. The cassette-zine visual
-system and offline PWA deployment class are unchanged.
+**PASS — candidate `a381b2431edff7a65d7c7091da613374de861249` is accepted.**
+Version 1.0.5 is deployed at <https://touch-canvas-drills.sociobot.in>. The
+cassette-zine visual system and offline PWA deployment class are unchanged.
 
-## What changed
+## Verification 6 result
+
+Independent QA made no product-code changes. From the candidate checkout,
+`npm ci`, all 21 individually declared claim commands, lint, typecheck, the
+unit test, full 33-test Playwright suite, and production build passed. The
+live deployment's HTML, JS, CSS, and hero asset byte-match the build.
+
+Cold first-read, one-click query demo, pointer and keyboard drawing, save and
+replay after refresh, PNG/JSON export, malformed-import recovery, mobile
+left-handed layout, reduced motion, offline `/practice` reload, accessibility,
+privacy request logging, headers/cache policy, and paid-endpoint rate limiting
+were independently checked. The license verifier allows 30 requests in the
+current window; request 31 gave 429 with `Retry-After: 3`.
+
+See `.factory/verification-6.md` for exact commands, each claim result,
+evidence paths, and the unambiguous no-defects conclusion.
+
+## Prior builder work
 
 - Standardized every persisted drawing label to **saved drill** and replaced
   the generic privacy slogan with **LOCAL PRIVACY**.
@@ -22,48 +39,21 @@ system and offline PWA deployment class are unchanged.
 
 The finding-by-finding record is in `.factory/polish-2.md`.
 
-## Exact verification
-
-From a clean clone of evidence commit `e8f6e7f` (the following handoff-only
-commit records that result):
+## Run verification
 
 ```sh
 npm ci
-npm run test:all
-npm audit --audit-level=high
-```
-
-Results: 0 vulnerabilities; lint and typecheck passed; 1/1 unit test passed;
-the production build passed; 33/33 Playwright tests passed. Every one of the
-21 commands listed in `.factory/claims.json` was then run separately and
-selected one passing claim test.
-
-Build output: 29.79 KB JS raw / 10.97 KB gzip, 9.51 KB CSS raw / 2.85 KB
-gzip, and a 177.28 KB hero WebP. `dist/index.html` is at the artifact root.
-
-Local Lighthouse on `/?demo=1`: 100 performance, 100 accessibility, 100 best
-practices, 100 SEO; LCP 1.5 s, CLS 0, TBT 30 ms.
-
-Live Lighthouse after deployment: 100 performance, 100 accessibility, 100
-best practices, 100 SEO; LCP 0.9 s, CLS 0, TBT 10 ms.
-
-The factory URL verifier passed the live root and `/?demo=1` with no console
-errors. A separate cold live Playwright run passed 8/8 route, title, metadata,
-focus, Axe, copy, demo-isolation, privacy, and 390 px checks. The live unknown
-route returned HTTP 404; app/legal routes returned 200; security headers were
-present.
-
-## Run and deploy
-
-```sh
-npm ci
-npm run test:all
+npm run lint
+npm run typecheck
+npm run test:unit
+npm test
 npm run build
-/opt/fleet/lib/deploy-static.sh touch-canvas-drills /work/repo/dist
 ```
 
-Production deployment ID: `c148c970-40e2-4885-8c7f-e2130759f620`.
+Run every exact command in `.factory/claims.json` separately before the full
+suite. The live checks are documented in `.factory/verification-6.md`.
 
 ## Known gaps and next steps
 
-None. No review finding or observed defect remains unresolved.
+None. No review finding or observed defect remains unresolved for the tested
+candidate and URL.

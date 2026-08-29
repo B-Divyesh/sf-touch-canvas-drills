@@ -688,7 +688,7 @@
       "file_type": "code",
       "norm_label": "collect()",
       "source_file": "tests/product.spec.ts",
-      "source_location": "L624"
+      "source_location": "L642"
     },
     {
       "id": "tests_product_spec_demorecord",
@@ -4103,7 +4103,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "tests/product.spec.ts",
-      "source_location": "L624",
+      "source_location": "L642",
       "weight": 1.0
     },
     {
@@ -4346,5 +4346,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "93d8313b6a8e4e7309b2ad93d1a5f010e67e25e0"
+  "built_at_commit": "30d980d01f1e433ccb9292820fecd2ad011f5fac"
 }

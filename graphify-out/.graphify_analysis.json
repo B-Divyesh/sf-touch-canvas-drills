@@ -203,13 +203,13 @@
       "degree": 11
     },
     {
-      "id": "src_main_drawnow",
-      "label": "drawNow()",
+      "id": "src_main_appview",
+      "label": "appView()",
       "degree": 9
     },
     {
-      "id": "src_main_appview",
-      "label": "appView()",
+      "id": "src_main_drawnow",
+      "label": "drawNow()",
       "degree": 9
     },
     {

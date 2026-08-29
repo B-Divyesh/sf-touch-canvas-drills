@@ -1,59 +1,36 @@
 {
   "communities": {
     "0": [
-      "src_main_bind",
-      "src_main_capturereturnedlicense",
-      "src_main_importdata",
-      "src_main_isapproute",
-      "src_main_render",
-      "src_main_route",
-      "src_main_savesession",
-      "src_main_verifylicense",
-      "src_main_verifystoredlicense",
-      "src_storage",
-      "src_storage_appdata",
-      "src_storage_cleardemodata",
-      "src_storage_demodata",
-      "src_storage_importprogress",
-      "src_storage_isdemo",
-      "src_storage_isrecord",
-      "src_storage_loaddata",
-      "src_storage_mirrortoindexeddb",
-      "src_storage_pendingmirror",
-      "src_storage_resetdemo",
-      "src_storage_samplestroke",
-      "src_storage_savedata",
-      "src_storage_seeddemo",
-      "src_storage_session",
-      "src_storage_stroke",
-      "src_storage_withpracticestore"
-    ],
-    "1": [
       "src_main",
       "src_main_announceroute",
-      "src_main_appview",
+      "src_main_announcestatus",
+      "src_main_begin",
+      "src_main_canvas",
       "src_main_current",
-      "src_main_days",
-      "src_main_demobar",
       "src_main_download",
+      "src_main_drawall",
+      "src_main_drawguide",
+      "src_main_drawnow",
       "src_main_enablemarkcontrols",
       "src_main_end",
-      "src_main_esc",
       "src_main_exportdata",
       "src_main_exportpng",
-      "src_main_footer",
-      "src_main_header",
       "src_main_keyboardcursor",
-      "src_main_landing",
-      "src_main_legal",
+      "src_main_keyboarddraw",
       "src_main_metadata",
-      "src_main_nav",
-      "src_main_notfound",
-      "src_main_saveddrills",
+      "src_main_move",
+      "src_main_position",
+      "src_main_replay",
+      "src_main_resetpracticestate",
       "src_main_setmeta",
+      "src_main_setupcanvas",
+      "src_main_shouldloaddemosample",
+      "src_main_starttimer",
+      "src_main_stoptimer",
+      "src_main_syncmarkcontrols",
       "src_main_updatemetadata"
     ],
-    "2": [
+    "1": [
       "ref_dom",
       "ref_dom_iterable",
       "ref_es2022",
@@ -75,7 +52,7 @@
       "tsconfig_compileroptions_usedefineforclassfields",
       "tsconfig_include"
     ],
-    "3": [
+    "2": [
       "axe_core_playwright",
       "eslint",
       "eslint_js",
@@ -96,24 +73,7 @@
       "vite",
       "vitest"
     ],
-    "4": [
-      "src_main_announcestatus",
-      "src_main_begin",
-      "src_main_canvas",
-      "src_main_drawall",
-      "src_main_drawguide",
-      "src_main_drawnow",
-      "src_main_keyboarddraw",
-      "src_main_move",
-      "src_main_position",
-      "src_main_replay",
-      "src_main_resetpracticestate",
-      "src_main_setupcanvas",
-      "src_main_starttimer",
-      "src_main_stoptimer",
-      "src_main_syncmarkcontrols"
-    ],
-    "5": [
+    "3": [
       "package",
       "package_name",
       "package_private",
@@ -129,7 +89,50 @@
       "package_type",
       "package_version"
     ],
+    "4": [
+      "src_storage",
+      "src_storage_appdata",
+      "src_storage_cleardemodata",
+      "src_storage_demodata",
+      "src_storage_importprogress",
+      "src_storage_isrecord",
+      "src_storage_mirrortoindexeddb",
+      "src_storage_pendingmirror",
+      "src_storage_resetdemo",
+      "src_storage_samplestroke",
+      "src_storage_seeddemo",
+      "src_storage_session",
+      "src_storage_stroke",
+      "src_storage_withpracticestore"
+    ],
+    "5": [
+      "src_main_bind",
+      "src_main_capturereturnedlicense",
+      "src_main_importdata",
+      "src_main_isapproute",
+      "src_main_nav",
+      "src_main_render",
+      "src_main_route",
+      "src_main_savesession",
+      "src_main_verifylicense",
+      "src_main_verifystoredlicense",
+      "src_storage_isdemo",
+      "src_storage_loaddata",
+      "src_storage_savedata"
+    ],
     "6": [
+      "src_main_appview",
+      "src_main_days",
+      "src_main_demobar",
+      "src_main_esc",
+      "src_main_footer",
+      "src_main_header",
+      "src_main_landing",
+      "src_main_legal",
+      "src_main_notfound",
+      "src_main_saveddrills"
+    ],
+    "7": [
       "src_drills",
       "src_drills_drill",
       "src_drills_drillkind",
@@ -138,43 +141,44 @@
       "src_drills_sampleprogress",
       "tests_drills_test"
     ],
-    "7": [
+    "8": [
       "tests_product_spec",
       "tests_product_spec_collect",
       "tests_product_spec_demorecord",
       "tests_product_spec_drawpointerstroke",
       "tests_product_spec_guidepixelsnear"
     ],
-    "8": [
+    "9": [
       "public_sw",
       "public_sw_app_routes",
       "public_sw_generated_assets",
       "public_sw_shell"
     ],
-    "9": [
+    "10": [
       "vite_config",
       "vite_config_injectprecachemanifest"
     ],
-    "10": [
+    "11": [
       "eslint_config"
     ],
-    "11": [
+    "12": [
       "playwright_config"
     ]
   },
   "cohesion": {
-    "0": 0.1753846153846154,
-    "1": 0.15810276679841898,
-    "2": 0.1,
-    "3": 0.10526315789473684,
-    "4": 0.24761904761904763,
-    "5": 0.14285714285714285,
-    "6": 0.3333333333333333,
-    "7": 0.4,
-    "8": 0.5,
-    "9": 1.0,
+    "0": 0.15608465608465608,
+    "1": 0.1,
+    "2": 0.10526315789473684,
+    "3": 0.14285714285714285,
+    "4": 0.21978021978021978,
+    "5": 0.3974358974358974,
+    "6": 0.28888888888888886,
+    "7": 0.3333333333333333,
+    "8": 0.4,
+    "9": 0.5,
     "10": 1.0,
-    "11": 1.0
+    "11": 1.0,
+    "12": 1.0
   },
   "gods": [
     {
@@ -190,7 +194,7 @@
     {
       "id": "src_storage_isdemo",
       "label": "isDemo()",
-      "degree": 12
+      "degree": 13
     },
     {
       "id": "src_storage_savedata",
@@ -203,6 +207,11 @@
       "degree": 11
     },
     {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 9
+    },
+    {
       "id": "src_main_appview",
       "label": "appView()",
       "degree": 9
@@ -213,22 +222,39 @@
       "degree": 9
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
-      "degree": 9
-    },
-    {
       "id": "src_main_canvas",
       "label": "canvas()",
       "degree": 8
     },
     {
-      "id": "src_main_keyboarddraw",
-      "label": "keyboardDraw()",
+      "id": "src_main_setupcanvas",
+      "label": "setupCanvas()",
       "degree": 7
     }
   ],
   "surprises": [
+    {
+      "source": "bind()",
+      "target": "clearDemoData()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "importData()",
+      "target": "importProgress()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
     {
       "source": "appView()",
       "target": "isDemo()",
@@ -253,28 +279,6 @@
     },
     {
       "source": "bind()",
-      "target": "clearDemoData()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "cross-file semantic connection"
-    },
-    {
-      "source": "bind()",
-      "target": "isDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "cross-file semantic connection"
-    },
-    {
-      "source": "bind()",
       "target": "resetDemo()",
       "source_files": [
         "src/main.ts",
@@ -282,7 +286,7 @@
       ],
       "confidence": "EXTRACTED",
       "relation": "calls",
-      "why": "cross-file semantic connection"
+      "why": "bridges separate communities"
     }
   ],
   "tokens": {

@@ -1,63 +1,46 @@
-# Touch Canvas Drills polish 1 handoff
+# Touch Canvas Drills verification 5 handoff
 
 ## Result
 
-PASS. All nine findings in `.factory/review-1.md` are fixed. There were no
-earlier review or polish reports. The released artifact remains a static,
-offline-first Vite PWA and retains its cassette-era zine visual system.
+**PASS — release accepted.** Candidate
+`30b2bf9b03fdadf0b9fdf1665ed99f39fe91be91` at
+<https://touch-canvas-drills.sociobot.in> satisfies the researched brief and
+factory acceptance contract. Fresh QA found no release-blocking, high, medium,
+or low defect. No product code was changed.
 
-The primary sample action now opens `/?demo=1` directly. It shows the persistent
-demo banner, 20 drills, and two replayable sessions. Demo writes use only the
-`demo:touch-canvas-drills:data` namespace. Reset restores the samples; leaving
-demo through either the banner or site navigation deletes demo data before the
-next route opens.
+The detailed evidence is in `.factory/verification-5.md`.
 
-The landing headings and sample button now use the exact plain wording from the
-review. Route metadata is complete and route-specific. Navigation announces
-and focuses each new h1. The direct 404 keeps a real HTTP 404 response while
-using the same header, footer, legal links, visual identity, and complete
-metadata as the application.
+## What was verified
 
-## Verification
+- All 19 commands in `.factory/claims.json` passed individually from a clean
+  detached checkout, with one tagged test per claim.
+- The cold desktop and 390px first-read gate passed. The sample action is
+  above the fold and opens a populated, isolated demo in one click.
+- `npm ci`, lint, TypeScript, 1 Vitest test, all 31 Playwright tests, the exact
+  production build, and `npm audit --audit-level=high` passed.
+- Drawing, timing, save/replay, PNG/JSON export, validated import boundaries,
+  demo reset/exit, mobile touch, keyboard input, reduced motion, and invalid
+  license recovery passed.
+- Live route Axe audits found no violations. There was no 390px/200%-text
+  overflow, and visible controls met 44px touch targets.
+- The ordinary demo flow made same-origin requests only. Security and caching
+  headers match policy. Checkout works, and license verification enforces 30
+  requests per window; request 31 returned 429 with `Retry-After: 3`.
+- All 16 public build files byte-match live. Fresh install, offline navigation,
+  and the successor-service-worker update flow passed.
+- Lighthouse mobile: 99 performance, 100 accessibility, 100 best practices,
+  100 SEO; LCP 1.1s, TBT 110ms, CLS 0.
 
-- Repair implementation commit: `c33a27c` (pushed to `origin/main`).
-- Clean clone: `npm ci` completed with zero vulnerabilities.
-- Clean clone: all 19 exact commands from `.factory/claims.json` passed one by
-  one, selecting one passing claim test each.
-- `npm run test:all`: lint passed; TypeScript passed; 1 Vitest unit test passed;
-  production build passed; the Playwright suite passed.
-- Playwright Axe: no serious or critical violations on `/`, `/?demo=1`,
-  `/demo`, `/practice`, `/privacy`, `/terms`, or the static 404.
-- Privacy: `@claim:privacy-local` observed only same-origin requests while the
-  demo loaded, drew, saved, and reset.
-- Offline: `@claim:offline-reload` opened an unvisited `/practice` route after
-  the browser went offline.
-- Mobile: 390×844 first action remained above the fold; navigation, demo, and
-  footer targets were at least 44 px; 200% text had no horizontal overflow.
-- Output budgets: initial JS 29.79 KB / 11.00 KB gzip; CSS 9.51 KB / 2.85 KB
-  gzip; hero WebP 177.28 KB.
-- Local Lighthouse mobile: performance 98, accessibility 100, best practices
-  100, SEO 100; LCP 2.4 s, CLS 0, total blocking time 0 ms.
-- Live Lighthouse mobile: 100 in all four categories; LCP 1.8 s, CLS 0,
-  total blocking time 0 ms.
-- `/opt/fleet/lib/verify-url.sh` against the live root returned HTTP 200 with no
-  console errors, `lang=en`, one h1, one main, no missing alt text, and no
-  unlabeled buttons.
-- Cold live route check: all product routes returned 200; an unknown path
-  returned HTTP 404; every route had its expected title/canonical, full social
-  metadata, one h1/main, zero mobile overflow, and zero serious/critical Axe
-  findings.
+## Run and verify
 
-Screenshots and the finding-by-finding evidence map are in
-`.factory/evidence/polish-1/` and `.factory/polish-1.md`.
+```sh
+npm ci
+npm run test:all
+npm run build
+npm audit --audit-level=high
+```
 
-## Deploy
-
-- Command: `/opt/fleet/lib/deploy-static.sh touch-canvas-drills dist`
-- Azure Static Web Apps deployment ID:
-  `be09c254-0183-4c33-b4cd-121df7da06c9`
-- Live URL: <https://touch-canvas-drills.sociobot.in>
-- Cold live checks completed: 2026-08-29 UTC.
+Demo entry point: <https://touch-canvas-drills.sociobot.in/?demo=1>
 
 ## Known gaps and next steps
 

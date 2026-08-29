@@ -1,59 +1,50 @@
-# Touch Canvas Drills — verification 9 handoff
+# Touch Canvas Drills — review 5 handoff
 
-## Result: PASS
+## Result: FAIL
 
-Candidate `00490b4399a98a8309c033680973b7813a380943` is accepted at
-<https://touch-canvas-drills.sociobot.in> on 2026-08-29 UTC. The live public
-build byte-matches the candidate. No product code was changed.
+Adversarial review 5 was completed against source
+`d238a6ed8cd6b231930358e74ce9c54884f497a8` and the live deployment at
+<https://touch-canvas-drills.sociobot.in> on 2026-08-29 UTC. Product code was
+not changed. The full report is `.factory/review-5.md`.
 
-## What was verified
+## What was done
 
-- Mandatory cold first-read and one-click sample demo: PASS on desktop and
-  390 x 844 mobile.
-- All 23 exact `.factory/claims.json` commands: PASS from a clean detached
-  clone after `npm ci`.
-- `npm run test:all`: PASS — lint, typecheck, 1/1 unit test, build, and 35/35
-  Playwright tests.
-- Live portable Playwright suite: 33/33 PASS.
-- Exact `npm run build` and `npm audit --audit-level=high`: PASS; `dist/`
-  exists and the audit reports zero vulnerabilities.
-- Desktop, mobile, keyboard-only, Android touch, WebKit mobile touch, reduced
-  motion, 200% text, 44px targets, route metadata, real 404, privacy, license
-  rejection, invalid import recovery, and timer boundaries: PASS.
-- Axe on seven desktop and mobile routes: zero violations at any severity.
-- Live ordinary demo request log: same-origin only; no analytics or upload.
-- Offline navigation after only the landing visit and the successor-worker
-  update path: PASS.
-- Sociobot verification rate limit: requests 1–30 returned 200; request 31
-  returned 429 with `Retry-After: 2`. Checkout returned 303 to hosted Dodo.
-- Lighthouse mobile root: 100 performance / 100 accessibility / 100 best
-  practices / 100 SEO, LCP 1.8 s, CLS 0. Mobile demo: 92 / 100 / 100 / 100,
-  LCP 1.1 s, CLS 0.
-- Build budgets: JS 30.23 KB raw / 11.10 KB gzip; CSS 9.60 KB raw / 2.87 KB
-  gzip; hero WebP 177.28 KB; no downloaded fonts.
+- Repeated the cold first-read at 390×844 and 1440×900.
+- Extracted and counted every landing/README copy unit.
+- Exercised the one-click demo with visible sample marks, Reset, Start for
+  real, a real-data sentinel in localStorage and IndexedDB, and a complete
+  request log.
+- Ran all 23 exact `.factory/claims.json` commands separately after `npm ci`
+  in a clean clone.
+- Ran `npm run test:all` in that clone: lint, typecheck, 1 unit test, build,
+  and 35 Playwright tests passed.
+- Rechecked all 24 earlier finding IDs in live behavior and current source.
+- Checked route metadata, a real 404, internal links, history/focus, Axe,
+  offline behavior, visual identity, and missed leverage.
+- Confirmed the live JavaScript SHA-256 equals the clean build artifact.
 
-Full evidence and file hashes are in `.factory/verification-9.md`.
+## Findings left
+
+Seven high-severity claim-proof gaps remain: `paid-extras`, `twenty-drills`,
+`png-export`, `local-progress`, `free-core`, `privacy-local`, and
+`demo-isolation` have passing commands but incomplete assertions. The deployed
+product behavior checked in this round is sound; the registered tests do not
+fully protect the promises from regression.
 
 ## How to reproduce
 
 ```sh
 npm ci
 npm run test:all
-npm audit --audit-level=high
-npm run build
-npm run preview
+npm test -- --grep @claim:<claim-id>
+PLAYWRIGHT_BASE_URL=https://touch-canvas-drills.sociobot.in npx playwright test --grep 'routes set complete metadata|every product route'
 ```
 
-Open `/?demo=1` for the isolated sample. **Reset demo** restores two replayable
-samples; **Start for real** discards the demo namespace and opens `/practice`.
+Open `/?demo=1` at 390×844. The two coral Rail lines marks should be visible
+in the first viewport. Seed both `touch-canvas-drills:data` stores before demo
+entry to verify that Reset and Start for real preserve real work.
 
-## Defects and known gaps
+## Repository state
 
-- Critical: none.
-- High: none.
-- Medium: none.
-- Low: none.
-- Known gaps: none.
-
-`.factory/brief.json` is absent, so the researched brief embedded in work
-order `touch-canvas-drills-verify-9` was used as the scope contract.
+Only `.factory/review-5.md` and this handoff are intended for the review
+commit. Four pre-existing modified `graphify-out` files were left untouched.

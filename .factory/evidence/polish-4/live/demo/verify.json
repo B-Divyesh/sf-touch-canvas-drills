@@ -1,0 +1,14 @@
+{
+  "url": "https://touch-canvas-drills.sociobot.in/?demo=1",
+  "loadMs": 900,
+  "errors": [],
+  "a11y": {
+    "title": "Demo — Touch Canvas Drills",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1540
+  }
+}

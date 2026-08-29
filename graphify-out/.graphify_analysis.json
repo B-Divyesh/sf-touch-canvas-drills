@@ -186,13 +186,13 @@
       "degree": 17
     },
     {
-      "id": "tsconfig_compileroptions",
-      "label": "compilerOptions",
+      "id": "src_storage_savedata",
+      "label": "saveData()",
       "degree": 11
     },
     {
-      "id": "src_storage_savedata",
-      "label": "saveData()",
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
       "degree": 11
     },
     {
@@ -201,8 +201,8 @@
       "degree": 10
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
+      "id": "src_main_drawnow",
+      "label": "drawNow()",
       "degree": 9
     },
     {
@@ -211,8 +211,8 @@
       "degree": 9
     },
     {
-      "id": "src_main_drawnow",
-      "label": "drawNow()",
+      "id": "package_scripts",
+      "label": "scripts",
       "degree": 9
     },
     {
@@ -221,15 +221,15 @@
       "degree": 8
     },
     {
-      "id": "src_main_setupcanvas",
-      "label": "setupCanvas()",
+      "id": "src_main_keyboarddraw",
+      "label": "keyboardDraw()",
       "degree": 7
     }
   ],
   "surprises": [
     {
-      "source": "demoBar()",
-      "target": "isDemo()",
+      "source": "bind()",
+      "target": "clearDemoData()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -239,8 +239,19 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "appView()",
-      "target": "isDemo()",
+      "source": "importData()",
+      "target": "importProgress()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bind()",
+      "target": "resetDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"
@@ -261,19 +272,8 @@
       "why": "bridges separate communities"
     },
     {
-      "source": "bind()",
-      "target": "clearDemoData()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "bind()",
-      "target": "resetDemo()",
+      "source": "appView()",
+      "target": "isDemo()",
       "source_files": [
         "src/main.ts",
         "src/storage.ts"

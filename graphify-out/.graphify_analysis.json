@@ -4,26 +4,37 @@
       "src_main",
       "src_main_announceroute",
       "src_main_appview",
+      "src_main_bind",
+      "src_main_capturereturnedlicense",
       "src_main_current",
       "src_main_days",
       "src_main_demobar",
       "src_main_download",
-      "src_main_enablemarkcontrols",
-      "src_main_end",
       "src_main_esc",
       "src_main_exportdata",
       "src_main_exportpng",
       "src_main_footer",
       "src_main_header",
+      "src_main_importdata",
+      "src_main_isapproute",
       "src_main_keyboardcursor",
       "src_main_landing",
       "src_main_legal",
       "src_main_metadata",
+      "src_main_nav",
       "src_main_notfound",
+      "src_main_render",
+      "src_main_route",
       "src_main_saveddrills",
+      "src_main_savesession",
       "src_main_setmeta",
       "src_main_shouldloaddemosample",
-      "src_main_updatemetadata"
+      "src_main_updatemetadata",
+      "src_main_verifylicense",
+      "src_main_verifystoredlicense",
+      "src_storage_isdemo",
+      "src_storage_loaddata",
+      "src_storage_savedata"
     ],
     "1": [
       "ref_dom",
@@ -69,23 +80,6 @@
       "vitest"
     ],
     "3": [
-      "src_main_announcestatus",
-      "src_main_begin",
-      "src_main_canvas",
-      "src_main_drawall",
-      "src_main_drawguide",
-      "src_main_drawnow",
-      "src_main_keyboarddraw",
-      "src_main_move",
-      "src_main_position",
-      "src_main_replay",
-      "src_main_resetpracticestate",
-      "src_main_setupcanvas",
-      "src_main_starttimer",
-      "src_main_stoptimer",
-      "src_main_syncmarkcontrols"
-    ],
-    "4": [
       "package",
       "package_name",
       "package_private",
@@ -101,7 +95,7 @@
       "package_type",
       "package_version"
     ],
-    "5": [
+    "4": [
       "src_storage",
       "src_storage_appdata",
       "src_storage_cleardemodata",
@@ -117,22 +111,43 @@
       "src_storage_stroke",
       "src_storage_withpracticestore"
     ],
+    "5": [
+      "tests_product_spec",
+      "tests_product_spec_canvascolorpixels",
+      "tests_product_spec_collect",
+      "tests_product_spec_demorecord",
+      "tests_product_spec_drawpointerstroke",
+      "tests_product_spec_drawsyntheticstroke",
+      "tests_product_spec_expecteddrills",
+      "tests_product_spec_expectrealpracticerecord",
+      "tests_product_spec_guidepixelsnear",
+      "tests_product_spec_inspectpng",
+      "tests_product_spec_practicerecord",
+      "tests_product_spec_realpracticerecord",
+      "tests_product_spec_writerealpracticerecord"
+    ],
     "6": [
-      "src_main_bind",
-      "src_main_capturereturnedlicense",
-      "src_main_importdata",
-      "src_main_isapproute",
-      "src_main_nav",
-      "src_main_render",
-      "src_main_route",
-      "src_main_savesession",
-      "src_main_verifylicense",
-      "src_main_verifystoredlicense",
-      "src_storage_isdemo",
-      "src_storage_loaddata",
-      "src_storage_savedata"
+      "src_main_begin",
+      "src_main_canvas",
+      "src_main_drawall",
+      "src_main_drawguide",
+      "src_main_drawnow",
+      "src_main_move",
+      "src_main_position",
+      "src_main_replay",
+      "src_main_setupcanvas"
     ],
     "7": [
+      "src_main_announcestatus",
+      "src_main_enablemarkcontrols",
+      "src_main_end",
+      "src_main_keyboarddraw",
+      "src_main_resetpracticestate",
+      "src_main_starttimer",
+      "src_main_stoptimer",
+      "src_main_syncmarkcontrols"
+    ],
+    "8": [
       "src_drills",
       "src_drills_drill",
       "src_drills_drillkind",
@@ -140,14 +155,6 @@
       "src_drills_drills",
       "src_drills_sampleprogress",
       "tests_drills_test"
-    ],
-    "8": [
-      "tests_product_spec",
-      "tests_product_spec_collect",
-      "tests_product_spec_demorecord",
-      "tests_product_spec_drawpointerstroke",
-      "tests_product_spec_guidepixelsnear",
-      "tests_product_spec_realpracticerecord"
     ],
     "9": [
       "public_sw",
@@ -167,14 +174,14 @@
     ]
   },
   "cohesion": {
-    "0": 0.1541501976284585,
+    "0": 0.1622103386809269,
     "1": 0.1,
     "2": 0.10526315789473684,
-    "3": 0.24761904761904763,
-    "4": 0.14285714285714285,
-    "5": 0.21978021978021978,
-    "6": 0.3974358974358974,
-    "7": 0.3333333333333333,
+    "3": 0.14285714285714285,
+    "4": 0.21978021978021978,
+    "5": 0.16666666666666666,
+    "6": 0.4722222222222222,
+    "7": 0.2857142857142857,
     "8": 0.3333333333333333,
     "9": 0.5,
     "10": 1.0,
@@ -208,6 +215,11 @@
       "degree": 11
     },
     {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 9
+    },
+    {
       "id": "src_main_appview",
       "label": "appView()",
       "degree": 9
@@ -218,44 +230,17 @@
       "degree": 9
     },
     {
-      "id": "package_scripts",
-      "label": "scripts",
-      "degree": 9
-    },
-    {
       "id": "src_main_canvas",
       "label": "canvas()",
       "degree": 8
     },
     {
-      "id": "src_main_keyboarddraw",
-      "label": "keyboardDraw()",
+      "id": "src_main_setupcanvas",
+      "label": "setupCanvas()",
       "degree": 7
     }
   ],
   "surprises": [
-    {
-      "source": "appView()",
-      "target": "isDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
-    {
-      "source": "demoBar()",
-      "target": "isDemo()",
-      "source_files": [
-        "src/main.ts",
-        "src/storage.ts"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities"
-    },
     {
       "source": "bind()",
       "target": "clearDemoData()",
@@ -288,6 +273,28 @@
       "confidence": "EXTRACTED",
       "relation": "calls",
       "why": "bridges separate communities"
+    },
+    {
+      "source": "render()",
+      "target": "seedDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "appView()",
+      "target": "isDemo()",
+      "source_files": [
+        "src/main.ts",
+        "src/storage.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
     }
   ],
   "tokens": {

@@ -98,6 +98,20 @@ test('landing copy is literal and the sample action enters the isolated query de
   expect(await page.evaluate(() => localStorage.getItem('touch-canvas-drills:data'))).toBeNull();
 });
 
+test('README and catalog use the reviewed plain wording', async () => {
+  const readme = await readFile('README.md', 'utf8');
+  expect(readme).toContain('Exports and imports checked progress files for backup or a new device.');
+  expect(readme).toContain('The demo keeps its sample work separate from your own practice.');
+  expect(readme).toContain('All 20 drills and both exports are free. A $6 one-time Sociobot license adds\nprivate drill notes and a printable seven-day practice sheet.');
+  expect(readme).toContain('Open `/?demo=1` to try sample data that\nnever changes your practice.');
+  for (const stale of ['validated progress JSON', 'localStorage and IndexedDB', 'free core practice', 'printable week sheet', 'no-save sandbox']) {
+    expect(readme).not.toContain(stale);
+  }
+  const catalog = (await readFile('.factory/catalog-description.txt', 'utf8')).trim();
+  expect(catalog).toMatch(/^Practice\b/);
+  expect(catalog.length).toBeLessThanOrEqual(120);
+});
+
 test('static 404 has the shared shell, plain recovery copy, and complete metadata', async ({ page }) => {
   await page.goto('/404.html');
   await expect(page).toHaveTitle('Page not found — Touch Canvas Drills');
